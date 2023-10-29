@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "core_c.h": "c",
+        "videoio_c.h": "c",
+        "swscale.h": "c"
+    }
+}
