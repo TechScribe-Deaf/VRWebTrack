@@ -12,6 +12,17 @@
 #include <libavutil/imgutils.h>
 #include <libswscale/swscale.h>
 #include <time.h>
+#include "GLFW/glfw3.h"
+#include <stdatomic.h>
+#include <stdbool.h>
+#include <pthread.h>
+
+const uint32_t width = 800;
+const uint32_t height = 600;
+const int rgb_buffer_count = 8;
+static unsigned char *rgb_buffer[rgb_buffer_count];
+static volatile int rgb_buffer_index = 0;
+static volatile int quit = 0;
 
 void yuyv_to_rgb(unsigned char *yuyv_buffer, unsigned char *rgb_buffer, int width, int height) {
     int yuyv_index = 0;
@@ -148,7 +159,7 @@ int PrintCapsOfWebcam(int fd, uint32_t width, uint32_t height)
     }
 
     struct v4l2_frmsizeenum frmsize;
-    frmsize.pixel_format = V4L2_PIX_FMT_YUYV;  // replace with your pixel format
+    frmsize.pixel_format = V4L2_PIX_FMT_H264;  // replace with your pixel format
     frmsize.index = 0;
 
     while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsize) == 0) {
@@ -200,11 +211,9 @@ int decode_packet(AVCodecContext *codec_context, struct SwsContext* sws_ctx, AVP
     return 0;
 }
 
-int main() {
-    struct timeval initStart;
-    gettimeofday(&initStart, NULL);
-    const uint32_t width = 640;
-    const uint32_t height = 480;
+int main(int argc, const char* argv[argc])
+{
+    
     AVCodec* vidCodec = avcodec_find_decoder(AV_CODEC_ID_H264);
     if (!vidCodec) {
         perror("Unable to find codec!\n");
@@ -217,32 +226,31 @@ int main() {
         return 1;
     }
     vidcodec_context->pix_fmt = AV_PIX_FMT_YUV420P;
-    printf("Pixel format enum value: %d\n", vidcodec_context->pix_fmt);
-    printf("Received codec!\n");
     struct SwsContext* sws_ctx = sws_getContext(width, height, vidcodec_context->pix_fmt,
                                         width, height, AV_PIX_FMT_RGB24,
                                         SWS_BILINEAR, NULL, NULL, NULL);
 
     if (!sws_ctx) {
-        fprintf(stderr, "Could not initialize the conversion context\n");
+        perror("Could not initialize the conversion context\n");
         return 1;
     }
-    printf("Sws ctx initialized\n");
 
     int fd = open("/dev/video0", O_RDWR);
     if (fd == -1) {
-        perror("Opening video device");
+        perror("Opening video device\n");
         return 1;
     }
-    PrintCapsOfWebcam(fd, width, height);
+    //PrintCapsOfWebcam(fd, width, height);
 
     struct v4l2_format format;
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    format.fmt.pix.pixelformat = V4L2_PIX_FMT_H264;
+    //format.fmt.pix.pixelformat = V4L2_PIX_FMT_H264;
+    //format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+    format.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
     format.fmt.pix.width = width;
     format.fmt.pix.height = height;
     if (ioctl(fd, VIDIOC_S_FMT, &format) == -1) {
-        perror("Setting Pixel Format");
+        perror("Fail to set Pixel Format\n");
         return 1;
     }
 
@@ -250,10 +258,11 @@ int main() {
     memset(&setfps, 0, sizeof(struct v4l2_streamparm));
     setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     setfps.parm.capture.timeperframe.numerator = 1;
-    setfps.parm.capture.timeperframe.denominator = 24;
+    setfps.parm.capture.timeperframe.denominator = 30;
 
     if (ioctl(fd, VIDIOC_S_PARM, &setfps) == -1) {
-        // Handle error
+        perror("Fail to set frame rate\n");
+        return 1;
     }
 
     // Requesting buffer
@@ -262,7 +271,7 @@ int main() {
     req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     req.memory = V4L2_MEMORY_MMAP;
     if (ioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
-        perror("Requesting Buffer");
+        perror("Fail to request buffer\n");
         return 1;
     }
 
@@ -271,12 +280,11 @@ int main() {
     buf.memory = V4L2_MEMORY_MMAP;
     buf.index = 0;
     if (ioctl(fd, VIDIOC_QUERYBUF, &buf) == -1) {
-        perror("Querying Buffer");
+        perror("Fail to query buffer\n");
         return 1;
     }
 
     unsigned char* buffer = (unsigned char*)mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, buf.m.offset);
-    unsigned char rgb_buffer[width * height * 4];
 
     AVCodec* codec = avcodec_find_decoder(AV_CODEC_ID_H264);
     if (!codec) {
@@ -296,7 +304,7 @@ int main() {
     AVFrame *rgb_frame = av_frame_alloc();
     if (!rgb_frame) {
         fprintf(stderr, "Could not allocate RGB frame\n");
-        return -1;
+        return 1;
     }
 
     rgb_frame->format = AV_PIX_FMT_RGB24;
@@ -304,64 +312,43 @@ int main() {
     rgb_frame->height = height;
 
     av_image_alloc(rgb_frame->data, rgb_frame->linesize, width, height, AV_PIX_FMT_RGB24, 1);
-    struct timeval initEnd;
-    gettimeofday(&initEnd, NULL);
-    struct timeval start_time[100];
-    struct timeval end_time[100];
-    struct timeval totalStart;
-    struct timeval totalEnd;
-    gettimeofday(&totalStart, NULL);
-    for (int i = 0; i < 100; i++) {
+
+    while (!quit){
         // Put the buffer in the incoming queue.
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1) {
-            perror("Queue Buffer");
+            perror("Fail to queue buffer\n");
             return 1;
         }
 
         // Execute capture
         if (ioctl(fd, VIDIOC_STREAMON, &buf.type) == -1) {
-            perror("Start Capture");
+            perror("Fail to start capture\n");
             return 1;
         }
         
         // Dequeue the buffer
-        gettimeofday(&start_time[i], NULL);
         if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
-            perror("Retrieving Frame");
+            perror("Fail to retrieve frame\n");
             return 1;
         }
-        gettimeofday(&end_time[i], NULL);
         packet.data = buffer;
         packet.size = buf.bytesused;
-        if (decode_packet(codec_context, sws_ctx, &packet, frame, rgb_frame, rgb_buffer, width, height))
+        int index;
+        int newIndex;
+        do {
+            index = rgb_buffer_index;
+            newIndex = index + 1;
+            if (newIndex >= rgb_buffer_count)
+                newIndex = 0;
+        }
+        while (!__atomic_compare_exchange(&rgb_buffer_index, &index, &newIndex, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
+
+        if (decode_packet(codec_context, sws_ctx, &packet, frame, rgb_frame, rgb_buffer[index], width, height))
         {
             perror("Failed to decode packet!\n");
             return 1;
         }
-        //char path[512];
-        //sprintf(path, "img%i.bmp", i);
-        //write_rgb_to_bmp(path, rgb_buffer, width, height);
     }
-    gettimeofday(&totalEnd, NULL);
-    double totalElapsed = 0;
-    for (int i = 0; i < 100; ++i)
-    {
-        double elapsed_us = (end_time[i].tv_sec - start_time[i].tv_sec) * 1000000LL +
-                (end_time[i].tv_usec - start_time[i].tv_usec);
-        elapsed_us /= 1000000.0;
-        totalElapsed += elapsed_us;
-        printf("Elapsed time: %.5f seconds\n", elapsed_us);
-    }
-    printf("Loop Elapsed: %.5f seconds\n", totalElapsed);
-    double elapsed_us = (totalEnd.tv_sec - totalStart.tv_sec) * 1000000LL +
-                (totalEnd.tv_usec - totalStart.tv_usec);
-    elapsed_us /= 1000000.0;
-    printf("Total Elapsed Time: %.5f seconds\n", elapsed_us);
-    elapsed_us = (initEnd.tv_sec - initStart.tv_sec) * 1000000LL +
-                (initEnd.tv_usec - initStart.tv_usec);
-    elapsed_us /= 1000000.0;
-    printf("Total Initialization Elapsed Time: %.5f seconds\n", elapsed_us);
-
     av_frame_free(frame);
     av_packet_free(&packet);
     av_freep(&rgb_frame->data[0]);
