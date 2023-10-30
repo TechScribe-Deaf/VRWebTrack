@@ -12,6 +12,8 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 
+typedef void(*decoded_rgb_frame_buffer_callback)(const uint8_t* rgb_buffer);
+
 /**
  * @brief Convert YUYV pixel format to RGB pixel format.
  *
@@ -76,11 +78,13 @@ int decode_packet(AVCodecContext *codec_context, struct SwsContext* sws_ctx, AVP
  * - Sets up the video capture format and frame rate
  * - Manages buffers using mmap
  * - Handles video frame decoding and optional scaling
+ * - Invokes the provided callback function upon successful frame decoding
  *
  * @param pathToCamera Path to the camera device (e.g., "/dev/video0").
  * @param width Desired width of the capture in pixels.
  * @param height Desired height of the capture in pixels.
  * @param fps Desired frames per second (fps) for video capture.
+ * @param callback A function pointer to a callback function that will be invoked when a frame is successfully decoded and ready for further processing.
  * @param quit Atomic flag to indicate if capturing should stop; if set to non-zero, capturing stops.
  * 
  * @return 0 on success, or a non-zero error code on failure.
@@ -88,6 +92,6 @@ int decode_packet(AVCodecContext *codec_context, struct SwsContext* sws_ctx, AVP
  * Error codes:
  * 1 - Failure due to memory allocation, codec initialization, device setup, or other internal issues.
  */
-int start_capture(const char* pathToCamera, uint32_t width, uint32_t height, uint32_t fps, atomic_int *quit);
+int start_capture(const char* pathToCamera, uint32_t width, uint32_t height, uint32_t fps, decoded_rgb_frame_buffer_callback callback, atomic_int *quit);
 
 #endif

@@ -142,9 +142,21 @@ int set_v4l2_videocapture_format_fps(int fd, uint32_t width, uint32_t height, ui
     return 0;
 }
 
-int start_capture(const char* pathToCamera, uint32_t width, uint32_t height, uint32_t fps, atomic_int *quit)
+int start_capture(const char* pathToCamera, uint32_t width, uint32_t height, uint32_t fps, decoded_rgb_frame_buffer_callback callback, atomic_int *quit)
 {
     int ret = 0;
+
+    if (callback == NULL)
+    {
+        fprintf(stderr, "Callback for processing rgb frame buffer cannot be null!\n");
+        return 1;
+    }
+
+    if (quit == NULL)
+    {
+        fprintf(stderr, "Atomic quit integer reference cannot be null!\n");
+        return 1;
+    }
 
     // Initialize FFmpeg and V4L2 related variables
     AVCodec *vidCodec = NULL;
@@ -288,6 +300,9 @@ int start_capture(const char* pathToCamera, uint32_t width, uint32_t height, uin
             ret = 1;
             goto cleanup_rgb_frame;
         }
+
+        // Run the callback for further processing
+        callback(rgb_buffer);
     }
 cleanup_rgb_frame:
     if (rgb_frame) {
