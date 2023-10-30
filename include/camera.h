@@ -69,13 +69,25 @@ int PrintCapsOfWebcam(int fd, uint32_t width, uint32_t height);
 int decode_packet(AVCodecContext *codec_context, struct SwsContext* sws_ctx, AVPacket *packet, AVFrame *frame, AVFrame *rgb_frame, unsigned char *rgb_buffer, int width, int height);
 
 /**
- * @brief Start capturing video.
+ * @brief Start capturing video using the V4L2 API and FFmpeg libraries.
+ * 
+ * This function performs the following key operations:
+ * - Initializes FFmpeg codecs for video decoding
+ * - Sets up the video capture format and frame rate
+ * - Manages buffers using mmap
+ * - Handles video frame decoding and optional scaling
  *
  * @param pathToCamera Path to the camera device (e.g., "/dev/video0").
  * @param width Desired width of the capture in pixels.
  * @param height Desired height of the capture in pixels.
- * @return 0 on success, or error code on failure.
+ * @param fps Desired frames per second (fps) for video capture.
+ * @param quit Atomic flag to indicate if capturing should stop; if set to non-zero, capturing stops.
+ * 
+ * @return 0 on success, or a non-zero error code on failure.
+ *
+ * Error codes:
+ * 1 - Failure due to memory allocation, codec initialization, device setup, or other internal issues.
  */
-int start_capture(const char* pathToCamera, uint32_t width, uint32_t height);
+int start_capture(const char* pathToCamera, uint32_t width, uint32_t height, uint32_t fps, atomic_int *quit);
 
 #endif

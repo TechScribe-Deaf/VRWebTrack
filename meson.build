@@ -8,7 +8,7 @@ swscale_dep = dependency('libswscale')
 usb_dep = dependency('libusb-1.0')
 vulkan_dep = dependency('vulkan')
 
-camera_src = ['src/camera.c']
+camera_src = ['src/camera_core.c', 'src/camera_linux.c']
 camera_deps = [avcodec_dep, avformat_dep, avutil_dep, swscale_dep, usb_dep]
 camera_include_dirs = ['./include']
 
