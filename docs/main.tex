@@ -1,0 +1,294 @@
+\documentclass{book}
+
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[top=2cm,bottom=2cm,left=2cm,right=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{tocloft,pgffor}
+\usepackage{blindtext}
+\usepackage{subcaption}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{crimson}
+\usepackage[most]{tcolorbox}
+\usepackage{minted}
+\usepackage{varwidth}
+\usepackage{environ}
+\usepackage{xparse}
+\usepackage{fontspec}
+\usepackage{arydshln}
+
+\newtcolorbox{titlecolorbox}[1]{ %the box around chapter
+    coltext=white,
+    colframe=black,
+    colback=black,
+    boxrule=0pt,
+    arc=0pt,
+    notitle,
+    width=4.8em,
+    height=2.4ex,
+    before=\hfill
+}
+
+\usepackage[explicit]{titlesec}
+\titleformat{\chapter}[display]
+  {\sffamily\Huge}
+  {}
+  {0pt}
+  {\begin{titlecolorbox}{}
+  {\large\sffamily\MakeUppercase{\chaptername}}
+  \end{titlecolorbox}
+  \vspace*{-4.19ex}\noindent\rule{\textwidth}{0.4pt}
+  \parbox[b]{\dimexpr\textwidth-4.8em\relax}{\raggedright\MakeUppercase{#1}}{\hfill\fontsize{70}{60}\selectfont\thechapter}
+  }
+  []
+
+\titleformat{name=\chapter,numberless}[display]
+  {\sffamily\Huge}
+  {}
+  {0pt}
+  {\begin{titlecolorbox}{}
+  {\large\sffamily\MakeUppercase{\chaptername}}
+  \end{titlecolorbox}
+  \vspace*{-4.19ex}\noindent\rule{\textwidth}{0.4pt}
+  \parbox[b]{\dimexpr\textwidth-4.8em\relax}{\raggedright\MakeUppercase{#1}}
+  }
+  []
+
+\titleformat{\section}[display]
+  {\sffamily\large}
+  {}
+  {0pt}
+  {\hrule\vspace*{0.25ex}\quad\raggedright\bfseries\MakeUppercase{#1}}
+  [\hrule]
+
+\setmonofont{Hack-Regular}
+
+\newlength{\bubblesep}
+\newlength{\bubblewidth}
+\setlength{\bubblesep}{2pt}
+\AtBeginDocument{\setlength{\bubblewidth}{.75\textwidth}}
+\definecolor{bubblegreen}{RGB}{103,184,104}
+\definecolor{bubblegray}{RGB}{241,240,240}
+
+\newcommand{\bubble}[4]{%
+  \tcbox[
+    on line,
+    arc=4.5mm,
+    colback=#1,
+    colframe=#1,
+    #2,
+  ]{\color{#3}\begin{varwidth}{\bubblewidth}#4\end{varwidth}}%
+}
+
+\ExplSyntaxOn
+\seq_new:N \l__ooker_bubbles_seq
+\tl_new:N \l__ooker_bubbles_first_tl
+\tl_new:N \l__ooker_bubbles_last_tl
+
+\NewEnviron{rightbubbles}
+ {
+  \begin{flushright}
+  \sffamily
+  \seq_set_split:NnV \l__ooker_bubbles_seq { \par } \BODY
+  \int_compare:nTF { \seq_count:N \l__ooker_bubbles_seq < 2 }
+   {
+    \bubble{bubblegreen}{rounded~corners}{white}{\BODY}\par
+   }
+   {
+    \seq_pop_left:NN \l__ooker_bubbles_seq \l__ooker_bubbles_first_tl
+    \seq_pop_right:NN \l__ooker_bubbles_seq \l__ooker_bubbles_last_tl
+    \bubble{bubblegreen}{sharp~corners=southeast}{white}{\l__ooker_bubbles_first_tl}
+    \par\nointerlineskip
+    \addvspace{\bubblesep}
+    \seq_map_inline:Nn \l__ooker_bubbles_seq
+     {
+      \bubble{bubblegreen}{sharp~corners=east}{white}{##1}
+      \par\nointerlineskip
+      \addvspace{\bubblesep}
+     }
+    \bubble{bubblegreen}{sharp~corners=northeast}{white}{\l__ooker_bubbles_last_tl}
+    \par
+   }
+   \end{flushright}
+ }
+\NewEnviron{leftbubbles}
+ {
+  \begin{flushleft}
+  \sffamily
+  \seq_set_split:NnV \l__ooker_bubbles_seq { \par } \BODY
+  \int_compare:nTF { \seq_count:N \l__ooker_bubbles_seq < 2 }
+   {
+    \bubble{bubblegray}{rounded~corners}{black}{\BODY}\par
+   }
+   {
+    \seq_pop_left:NN \l__ooker_bubbles_seq \l__ooker_bubbles_first_tl
+    \seq_pop_right:NN \l__ooker_bubbles_seq \l__ooker_bubbles_last_tl
+    \bubble{bubblegray}{sharp~corners=southwest}{black}{\l__ooker_bubbles_first_tl}
+    \par\nointerlineskip
+    \addvspace{\bubblesep}
+    \seq_map_inline:Nn \l__ooker_bubbles_seq
+     {
+      \bubble{bubblegray}{sharp~corners=west}{black}{##1}
+      \par\nointerlineskip
+      \addvspace{\bubblesep}
+     }
+    \bubble{bubblegray}{sharp~corners=northwest}{black}{\l__ooker_bubbles_last_tl}\par
+   }
+  \end{flushleft}
+ }
+\ExplSyntaxOff
+
+\tcbuselibrary{minted,skins}
+\graphicspath{ {images/} }
+\usepackage{tikz}
+\definecolor{commentcolor}{RGB}{106, 153, 85}
+\definecolor{keywordcolor}{RGB}{180, 122, 175}
+\definecolor{typecolor}{RGB}{172, 166, 121}
+\definecolor{stringcolor}{RGB}{206, 145, 120}
+\definecolor{backgroundcolor}{RGB}{30, 30, 30}
+\definecolor{lighterbackgroundcolor}{RGB}{50, 50, 50}
+\definecolor{bracketcolor}{RGB}{255, 215, 0}
+\definecolor{numbercolor}{RGB}{181,206,163}
+\definecolor{darkorange}{rgb}{1, 0.55, 0}
+\definecolor{ebony}{rgb}{0.33, 0.36, 0.31}
+%\usemintedstyle[c]{gruvbox-dark}
+%\usemintedstyle[csharp]{gruvbox-dark}
+%\usemintedstyle[bash]{gruvbox-dark}
+%\renewcommand\theFancyVerbLine{\large\arabic{FancyVerbLine}}
+\renewcommand{\theFancyVerbLine}{
+  \ttfamily
+  \textcolor{white}{
+    \small
+    \oldstylenums{
+        \arabic{FancyVerbLine}
+    }
+  }
+}
+%\setminted[c]{bgcolor=backgroundcolor,numbers=left,numberfirstline=true,obeytabs=true,tabsize=4,linenos}
+\newtcblisting{ccode}{
+    listing engine=minted,
+    minted style=gruvbox-dark,
+    minted language=c,
+    minted options={fontsize=\normalsize\ttfamily,linenos,numbersep=-4mm,stripall=true},
+    colback=backgroundcolor,
+    colframe=backgroundcolor,
+    listing only,
+    left=5mm,
+    enhanced,
+    overlay={\begin{tcbclipinterior}\fill[lighterbackgroundcolor](frame.south west)rectangle([xshift=5mm]frame.north west);\end{tcbclipinterior}}
+}
+
+\newtcblisting{bashcode}{
+    listing engine=minted,
+    minted style=fruity,
+    minted language=bash,
+    minted options={fontsize=\normalsize\ttfamily,linenos,numbersep=-4mm,stripall=true},
+    colback=backgroundcolor,
+    colframe=backgroundcolor,
+    listing only,
+    left=5mm,
+    enhanced,
+    overlay={\begin{tcbclipinterior}\fill[lighterbackgroundcolor](frame.south west)rectangle([xshift=5mm]frame.north west);\end{tcbclipinterior}}
+}
+
+\newtcblisting{csharpcode}{
+    listing engine=minted,
+    minted style=gruvbox-dark,
+    minted language=csharp,
+    minted options={fontsize=\normalsize\ttfamily,linenos,numbersep=-4mm,stripall=true},
+    colback=backgroundcolor,
+    colframe=backgroundcolor,
+    listing only,
+    left=5mm,
+    enhanced,
+    overlay={\begin{tcbclipinterior}\fill[lighterbackgroundcolor](frame.south west)rectangle([xshift=5mm]frame.north west);\end{tcbclipinterior}}
+}
+
+\newtcblisting{mesoncode}{
+    listing engine=minted,
+    minted style=gruvbox-dark,
+    minted language=meson,
+    minted options={fontsize=\normalsize\ttfamily,linenos,numbersep=-4mm,stripall=true},
+    colback=backgroundcolor,
+    colframe=backgroundcolor,
+    listing only,
+    left=5mm,
+    enhanced,
+    overlay={\begin{tcbclipinterior}\fill[lighterbackgroundcolor](frame.south west)rectangle([xshift=5mm]frame.north west);\end{tcbclipinterior}}
+}
+
+\newtcblisting{textcode}{
+    listing engine=minted,
+    minted style=gruvbox-dark,
+    minted language=text,
+    minted options={fontsize=\normalsize\ttfamily,linenos,numbersep=-4mm,stripall=true},
+    colback=backgroundcolor,
+    colframe=backgroundcolor,
+    listing only,
+    left=5mm,
+    enhanced,
+    overlay={\begin{tcbclipinterior}\fill[lighterbackgroundcolor](frame.south west)rectangle([xshift=5mm]frame.north west);\end{tcbclipinterior}}
+}
+
+\definecolor{boxcolor}{rgb}{0.122, 0.435, 0.698}
+
+\newtcolorbox[auto counter,number within=section]{warning}[1][]{
+  enhanced jigsaw,colback=white,colframe=darkorange,coltitle=darkorange,
+  fonttitle=\bfseries\sffamily,
+  sharp corners,
+  detach title,
+  leftrule=22mm,
+  underlay unbroken and first={\node[below,text=black,anchor=east]
+  at ([xshift=-17.5pt]interior.base west) {\includegraphics[height=24pt]{images/warning.png}};},
+  breakable,pad at break=1mm,
+  #1,
+  code={\ifdefempty{\tcbtitletext}{}{\tcbset{before upper={\tcbtitle\par\medskip}}}},
+}
+
+\newtcolorbox[auto counter,number within=section]{alert}[1][]{
+  enhanced jigsaw,colback=white,colframe=ebony,coltitle=ebony,
+  fonttitle=\bfseries\sffamily,
+  sharp corners,
+  detach title,
+  leftrule=22mm,
+  underlay unbroken and first={\node[below,text=black,anchor=east]
+  at ([xshift=-17.5pt]interior.base west) {\includegraphics[height=24pt]{images/skull.png}};},
+  breakable,pad at break=1mm,
+  #1,
+  code={\ifdefempty{\tcbtitletext}{}{\tcbset{before upper={\tcbtitle\par\medskip}}}},
+}
+\newcommand\Tstrut{\rule{0pt}{2.6ex}}       % "top" strut
+\newcommand\Bstrut{\rule[-0.9ex]{0pt}{0pt}} % "bottom" strut
+\newcommand{\TBstrut}{\Tstrut\Bstrut} % top&bottom struts
+
+\titlespacing{\chapter}{0pt}{-28pt}{2cm}
+\renewcommand*\contentsname{Table of Contents}
+\begin{document}
+
+\author{TechScribe}
+\title{VRWebTrack Project\\
+   	   \large \textbf{\textcopyright 2023 - VRWebTrack - All Rights Reserved. }}
+\date{October 2023}
+
+\frontmatter
+
+\maketitle
+\newpage
+\include{./note}
+\tableofcontents
+
+\mainmatter
+%\include{./chapters/demo}
+\include{./chapters/chapter01}
+\backmatter
+% bibliography, glossary and index would go here.
+
+\end{document}

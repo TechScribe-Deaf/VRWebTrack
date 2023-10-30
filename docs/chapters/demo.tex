@@ -1,0 +1,54 @@
+\chapter*{Demo}
+
+Welcome to the book, we will talk about X, Y, Z.
+
+You can find more information in the footnote\footnote{Source: Wikipedia.org}.
+
+Here the code snippet:
+
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.5\linewidth}
+\begin{ccode}
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+int main(int argc, const char* argv[])
+{
+    printf("Hello world!\n");
+    return 0;
+}
+\end{ccode}
+\end{subfigure}
+\caption{Example Code}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\begin{subfigure}[b]{0.75\linewidth}
+\begin{leftbubbles}
+This is Example.com server!
+\end{leftbubbles}
+\begin{rightbubbles}
+Greeting! \\
+I am UserABC and let's begin a Key Exchange, \\
+here my public key: \\
+a85118ab362a4...
+\end{rightbubbles}
+\begin{leftbubbles}
+Acknowledged, here the server's public key: \\
+3be1524c39f84...
+\end{leftbubbles}
+\end{subfigure}
+\caption{Chat Bubbles Example}
+\end{figure}
+
+\begin{warning}[title=Warning]
+Be careful about using \ttfamily rm \sffamily as it may destroy your machine if used improperly.
+\end{warning}
+
+
+\begin{alert}[title=\textbf{Do not run the following command, you may destroy your machine}]
+\mintinline{bash}{rm -Rf /}
+\end{alert}
