@@ -16,9 +16,8 @@ const uint32_t width = 800;
 const uint32_t height = 600;
 
 int main() {
-    for (int i = 0; i < rgb_buffer_count; ++i)
-        rgb_buffer[i] = calloc(1, width * height * 3);
     glfwInit();
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     GLFWwindow* window = glfwCreateWindow(width, height, "FreeTrack", NULL, NULL);
     glfwMakeContextCurrent(window);
     while (!glfwWindowShouldClose(window)){

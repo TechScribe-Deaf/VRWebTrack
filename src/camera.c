@@ -1,3 +1,4 @@
+#include "camera.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -6,23 +7,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <linux/videodev2.h>
-#include <stdint.h>
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/imgutils.h>
-#include <libswscale/swscale.h>
-#include <time.h>
-#include "GLFW/glfw3.h"
 #include <stdatomic.h>
 #include <stdbool.h>
-#include <pthread.h>
-
-const uint32_t width = 800;
-const uint32_t height = 600;
-const int rgb_buffer_count = 8;
-static unsigned char *rgb_buffer[rgb_buffer_count];
-static volatile int rgb_buffer_index = 0;
-static volatile int quit = 0;
 
 void yuyv_to_rgb(unsigned char *yuyv_buffer, unsigned char *rgb_buffer, int width, int height) {
     int yuyv_index = 0;
@@ -211,42 +197,59 @@ int decode_packet(AVCodecContext *codec_context, struct SwsContext* sws_ctx, AVP
     return 0;
 }
 
-int main(int argc, const char* argv[argc])
+int initialize_avcodec(AVCodec** outVidCodec, AVCodecContext** outVidCodecContext)
 {
-    
-    AVCodec* vidCodec = avcodec_find_decoder(AV_CODEC_ID_H264);
-    if (!vidCodec) {
+    *outVidCodec = avcodec_find_decoder(AV_CODEC_ID_H264);
+    if (*outVidCodec == NULL) {
         perror("Unable to find codec!\n");
         return 1;
     }
 
-    AVCodecContext* vidcodec_context = avcodec_alloc_context3(vidCodec);
-    if (avcodec_open2(vidcodec_context, vidCodec, NULL) < 0) {
+    *outVidCodecContext = avcodec_alloc_context3(*outVidCodec);
+    if (avcodec_open2(*outVidCodecContext, *outVidCodec, NULL) < 0) {
         perror("Unable to open codec!\n");
         return 1;
     }
-    vidcodec_context->pix_fmt = AV_PIX_FMT_YUV420P;
-    struct SwsContext* sws_ctx = sws_getContext(width, height, vidcodec_context->pix_fmt,
+    return 0;
+}
+
+int initialize_swscale(uint32_t width, uint32_t height, AVCodecContext* vidcodecContext, struct SwsContext** outSwsContext)
+{
+    *outSwsContext = sws_getContext(width, height, vidcodecContext->pix_fmt,
                                         width, height, AV_PIX_FMT_RGB24,
                                         SWS_BILINEAR, NULL, NULL, NULL);
 
-    if (!sws_ctx) {
+    if (*outSwsContext == NULL) {
         perror("Could not initialize the conversion context\n");
         return 1;
     }
+    return 0;
+}
+int start_capture(const char* pathToCamera, uint32_t width, uint32_t height)
+{
+    unsigned char rgb_buffer[width * height * 3];
+    AVCodec* vidCodec;
+    AVCodecContext* vidcodec_context;
+    if (initialize_avcodec(&vidCodec, &vidcodec_context))
+    {
+        perror("Failed to initialize avcodec!\n");
+        return 1;
+    }
 
-    int fd = open("/dev/video0", O_RDWR);
+    vidcodec_context->pix_fmt = AV_PIX_FMT_YUV420P;
+
+
+    int fd = open(pathToCamera, O_RDWR);
     if (fd == -1) {
         perror("Opening video device\n");
         return 1;
     }
-    //PrintCapsOfWebcam(fd, width, height);
 
     struct v4l2_format format;
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    //format.fmt.pix.pixelformat = V4L2_PIX_FMT_H264;
+    format.fmt.pix.pixelformat = V4L2_PIX_FMT_H264;
     //format.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
-    format.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
+    //format.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
     format.fmt.pix.width = width;
     format.fmt.pix.height = height;
     if (ioctl(fd, VIDIOC_S_FMT, &format) == -1) {
@@ -313,7 +316,7 @@ int main(int argc, const char* argv[argc])
 
     av_image_alloc(rgb_frame->data, rgb_frame->linesize, width, height, AV_PIX_FMT_RGB24, 1);
 
-    while (!quit){
+    while (true){
         // Put the buffer in the incoming queue.
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1) {
             perror("Fail to queue buffer\n");
@@ -333,17 +336,8 @@ int main(int argc, const char* argv[argc])
         }
         packet.data = buffer;
         packet.size = buf.bytesused;
-        int index;
-        int newIndex;
-        do {
-            index = rgb_buffer_index;
-            newIndex = index + 1;
-            if (newIndex >= rgb_buffer_count)
-                newIndex = 0;
-        }
-        while (!__atomic_compare_exchange(&rgb_buffer_index, &index, &newIndex, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
 
-        if (decode_packet(codec_context, sws_ctx, &packet, frame, rgb_frame, rgb_buffer[index], width, height))
+        if (decode_packet(codec_context, sws_ctx, &packet, frame, rgb_frame, rgb_buffer, width, height))
         {
             perror("Failed to decode packet!\n");
             return 1;
@@ -353,7 +347,10 @@ int main(int argc, const char* argv[argc])
     av_packet_free(&packet);
     av_freep(&rgb_frame->data[0]);
     av_frame_free(&rgb_frame);
-    // Clean up
     close(fd);
     return 0;
+}
+int main(int argc, const char* argv[argc])
+{
+    
 }

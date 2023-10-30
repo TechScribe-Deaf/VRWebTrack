@@ -21,12 +21,14 @@ VRWebTrack offers an economical solution for full-body tracking in virtual reali
 
 #### Software Architecture
 
-The architecture consists of three distinct software components, a design necessitated by certain limitations observed during development. Specifically, the FFMpeg library encounters decoding issues with H.264 frames when a GLFW window context is created, prompting the requirement for separate processes.
+The architecture consists of two distinct software components, a design necessitated by certain limitations observed during development. Specifically, the FFMpeg library encounters decoding issues with H.264 frames when a GLFW window context is created, prompting the requirement for separate processes.
 
 - Monitor Software: Facilitates end-user interaction, including the selection of colored objects for tracking, ray scoping optimization radius settings, camera calibration, feeding information to SteamVR, etc.
 
-- Local Webcam Processing Software: This is a self-contained, locally hosted process responsible for webcam data processing. It communicates with the Monitor Software using Shared Memory and Interprocess Communication Protocol.
-
-- Remote Webcam Processing Software: This component is designed for webcams placed on separate computers and operates similarly to the Local Webcam Processing Software. It communicates with the Monitor Software via UDP Protocol over the Local Area Network.
+- Webcam Processing Software: This is a self-contained, locally hosted process responsible for webcam data processing. It communicates with the Monitor Software using Shared Memory and Interprocess Communication Protocol.
 
 **Note:** VRWebTrack does not utilize the OpenCV library. Instead, it relies on the Video for Linux 2 API for webcam communication. The exclusion of OpenCV is intentional, as its C API has been deprecated, undermining the goals of this project. VRWebTrack aims for high customizability and extensibility, allowing users to implement different algorithms or optimizations without requiring a complete rewrite of the existing software.
+
+#### License
+
+Please be aware that this project is licensed under GNU Affero General Public License.
