@@ -133,7 +133,7 @@ int set_v4l2_videocapture_format_fps(int fd, uint32_t width, uint32_t height, ui
     memset(&setfps, 0, sizeof(struct v4l2_streamparm));
     setfps.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     setfps.parm.capture.timeperframe.numerator = 1;
-    setfps.parm.capture.timeperframe.denominator = 30;
+    setfps.parm.capture.timeperframe.denominator = fps;
 
     if (ioctl(fd, VIDIOC_S_PARM, &setfps) == -1) {
         fprintf(stderr,"Fail to set frame rate\n");
