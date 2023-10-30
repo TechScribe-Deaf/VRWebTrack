@@ -1,14 +1,8 @@
-#include "camera.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <linux/videodev2.h>
 #include <stdatomic.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 void yuyv_to_rgb(unsigned char *yuyv_buffer, unsigned char *rgb_buffer, int width, int height) {
     int yuyv_index = 0;
