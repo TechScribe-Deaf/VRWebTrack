@@ -10,7 +10,7 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 
-int PrintCapsOfWebcam(int fd, uint32_t width, uint32_t height)
+int print_caps_of_webcam(int fd, uint32_t width, uint32_t height)
 {
     struct v4l2_capability cap;
     if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {

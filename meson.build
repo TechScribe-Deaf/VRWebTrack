@@ -11,7 +11,7 @@ vulkan_dep = dependency('vulkan')
 camera_src = ['src/camera/camera_core.c', 'src/camera/camera_main.c']
 if host_machine.system() == 'linux'
     camera_src += 'src/camera/camera_linux.c'
-elif
+elif host_machine.system() == 'windows'
     # Windows specific source file
 endif
 

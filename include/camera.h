@@ -51,7 +51,7 @@ int write_rgb_to_bmp(const char *file_path, unsigned char *rgb_buffer, int width
  * @param height Desired height of the image in pixels.
  * @return 0 on success, or error code on failure.
  */
-int PrintCapsOfWebcam(int fd, uint32_t width, uint32_t height);
+int print_caps_of_webcam(int fd, uint32_t width, uint32_t height);
 
 /**
  * @brief Decode an AV packet and convert it to RGB format.
