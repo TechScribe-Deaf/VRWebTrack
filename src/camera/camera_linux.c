@@ -1,3 +1,4 @@
+#define CAMERA_IMPLEMENTATION
 #include "camera.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +11,14 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 
+/**
+ * @brief Print the capabilities of a webcam.
+ *
+ * @param fd File descriptor of the webcam.
+ * @param width Desired width of the image in pixels.
+ * @param height Desired height of the image in pixels.
+ * @return 0 on success, or error code on failure.
+ */
 int print_caps_of_webcam(int fd, uint32_t width, uint32_t height)
 {
     struct v4l2_capability cap;
@@ -59,7 +68,20 @@ int print_caps_of_webcam(int fd, uint32_t width, uint32_t height)
     return 0;
 }
 
-int decode_packet(AVCodecContext *codec_context, struct SwsContext* sws_ctx, AVPacket *packet, AVFrame *frame, AVFrame *rgb_frame, unsigned char *rgb_buffer, int width, int height) {
+/**
+ * @brief Decode an AV packet and convert it to RGB format.
+ *
+ * @param codec_context Pointer to the AVCodecContext.
+ * @param sws_ctx Pointer to the SwsContext for pixel format conversion.
+ * @param packet Pointer to the AVPacket to decode.
+ * @param frame Pointer to the AVFrame to store the decoded frame.
+ * @param rgb_frame Pointer to the AVFrame to store the RGB frame.
+ * @param rgb_buffer Pointer to the buffer to store RGB data.
+ * @param width Width of the image in pixels.
+ * @param height Height of the image in pixels.
+ * @return 0 on success, or error code on failure.
+ */
+static inline int decode_packet(AVCodecContext *codec_context, struct SwsContext* sws_ctx, AVPacket *packet, AVFrame *frame, AVFrame *rgb_frame, unsigned char *rgb_buffer, int width, int height) {
     int response = avcodec_send_packet(codec_context, packet);
     if (response < 0) {
         fprintf(stderr,"Error while sending a packet to the decoder");
@@ -86,7 +108,7 @@ int decode_packet(AVCodecContext *codec_context, struct SwsContext* sws_ctx, AVP
     return 0;
 }
 
-int initialize_avcodec(AVCodec** outVidCodec, AVCodecContext** outVidCodecContext)
+static inline int initialize_avcodec(AVCodec** outVidCodec, AVCodecContext** outVidCodecContext)
 {
     *outVidCodec = (AVCodec*) avcodec_find_decoder(AV_CODEC_ID_H264);
     if (*outVidCodec == NULL) {
@@ -102,7 +124,7 @@ int initialize_avcodec(AVCodec** outVidCodec, AVCodecContext** outVidCodecContex
     return 0;
 }
 
-int initialize_swscale(uint32_t width, uint32_t height, AVCodecContext* vidcodecContext, struct SwsContext** outSwsContext)
+static inline int initialize_swscale(uint32_t width, uint32_t height, AVCodecContext* vidcodecContext, struct SwsContext** outSwsContext)
 {
     *outSwsContext = sws_getContext(width, height, vidcodecContext->pix_fmt,
                                         width, height, AV_PIX_FMT_RGB24,
@@ -115,7 +137,7 @@ int initialize_swscale(uint32_t width, uint32_t height, AVCodecContext* vidcodec
     return 0;
 }
 
-int set_v4l2_videocapture_format_fps(int fd, uint32_t width, uint32_t height, uint32_t fps)
+static inline int set_v4l2_videocapture_format_fps(int fd, uint32_t width, uint32_t height, uint32_t fps)
 {
     struct v4l2_format format;
     format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -302,7 +324,7 @@ int start_capture(const char* pathToCamera, uint32_t width, uint32_t height, uin
         }
 
         // Run the callback for further processing
-        callback(rgb_buffer);
+        callback(rgb_buffer, width, height);
     }
 cleanup_rgb_frame:
     if (rgb_frame) {
