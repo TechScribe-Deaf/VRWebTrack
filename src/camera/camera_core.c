@@ -544,3 +544,193 @@ const char* camera_pixel_format_to_str(camera_pixel_format format)
             return "Unknown";
     }
 }
+
+void print_camera_desc(camera_desc* camera)
+{
+    if (camera->device_id.device_name)
+        printf("Name: %s\n", camera->device_id.device_name);
+    if (camera->device_id.driver_info)
+        printf("Driver Info: %s\n", camera->device_id.driver_info);
+    if (camera->device_id.version)
+        printf("Version: %s\n", camera->device_id.version);
+    if (camera->device_id.bus)
+        printf("Bus: %s\n", camera->device_id.bus);
+    if (camera->device_id.card)
+        printf("Card: %s\n", camera->device_id.card);
+    printf("Capabilities: %ui\n", camera->device_id.capabilities);
+    if (camera->device_id.manufacturer)
+        printf("Manufacturer: %s\n", camera->device_id.manufacturer);
+    if (camera->device_id.serial_number)
+        printf("Serial Number: %s\n", camera->device_id.serial_number);
+
+    if (camera->buffers && camera->buffers_count > 0)
+    {
+        printf("Buffer Count: %ui\n", camera->buffers_count);
+        for (uint32_t i = 0; i < camera->buffers_count; ++i)
+        {
+            printf("\tBuffer Size: %ui\n", camera->buffers[i].buffer_size);
+        }
+    }
+
+    printf("Camera Capabilities:\n");
+    if (camera->capabilities.can_capture)
+        printf("\tCan Capture: Yes\n");
+    else
+        printf("\tCan Capture: No\n");
+    
+    if (camera->capabilities.has_hardware_acceleration)
+        printf("\tHas Hardware Acceleration: Yes\n");
+    else
+        printf("\tHas Hardware Acceleration: No\n");
+
+    if (camera->capabilities.has_modulator)
+        printf("\tHas Modulator: Yes\n");
+    else
+        printf("\tHas Modulator: No\n");
+
+    if (camera->capabilities.has_tuner)
+        printf("\tHas Tuner: Yes\n");
+    else
+        printf("\tHas Tuner: No\n");
+    
+    if (camera->capabilities.supports_async_io)
+        printf("\tSupports Async IO: Yes\n");
+    else
+        printf("\tSupports Async IO: No\n");
+
+    if (camera->capabilities.supports_streaming)
+        printf("\tSupports Streaming: Yes\n");
+    else
+        printf("\tSupports Streaming: No\n");
+
+    printf("Current Control Settings:\n");
+    printf("\tAuto White Balance: %ui\n", camera->controls.auto_white_balance);
+    printf("\tBrightness: %ui\n", camera->controls.brightness);
+    printf("\tContrast: %ui\n", camera->controls.contrast);
+    printf("\tExposure Mode: %ui\n", camera->controls.exposure_mode);
+    printf("\tGain: %ui\n", camera->controls.gain);
+    printf("\tHue: %ui\n", camera->controls.hue);
+    printf("\tSaturation: %ui\n", camera->controls.saturation);
+
+    if (camera->formats && camera->formats_count > 0)
+    {
+        printf("Available Formats:\n");
+        for (uint32_t formatIdx = 0; formatIdx < camera->formats_count; ++formatIdx)
+        {
+            printf("\tWidth: %ui\n", camera->formats[formatIdx].width);
+            printf("\tHeight: %ui\n", camera->formats[formatIdx].height);
+            printf("\tPixel Format: %s\n", camera_pixel_format_to_str(camera->formats[formatIdx].pixel_format));
+            if (camera->formats[formatIdx].fps && camera->formats[formatIdx].fps_count > 0)
+            {
+                printf("\tAvailable Frame Per Second Configurations:\n");
+                for (uint32_t fpsIdx = 0; fpsIdx < camera->formats[formatIdx].fps_count; ++fpsIdx)
+                {
+                    printf("\t\tFPS: %ui / %ui\n", 
+                        camera->formats[formatIdx].fps[fpsIdx].frame_rate_numerator,
+                        camera->formats[formatIdx].fps[fpsIdx].frame_rate_denominator);
+                }
+            }
+        }
+    }
+
+    switch (camera->io_method)
+    {
+        case camera_io_method_MMAP:
+        {
+            printf ("IO Method: MMAP\n");
+            break;
+        }
+        case camera_io_method_READ_WRITE:
+        {
+            printf("IO Method: Read and Write\n");
+            break;
+        }
+        case camera_io_method_USER_PTR:
+        {
+            printf("IO Method: User PTR\n");
+            break;
+        }
+        default:
+        {
+            printf("IO Method: Unknown\n");
+            break;
+        }
+    }
+
+    printf("Streaming Params\n");
+    printf("\tCapture Time Per Frame: %ui\n", camera->streaming_params.capture_time_per_frame);
+    printf("\tFrame Interval: %ui\n", camera->streaming_params.frame_interval);
+
+    if (camera->tuning && camera->tuning_count > 0)
+    {
+        printf("Tuning Configurations:\n");
+        for (uint32_t tuningIdx = 0; tuningIdx < camera->tuning_count; ++tuningIdx)
+        {
+            printf("\tTuning #%ui\n", tuningIdx);
+            printf("\t\tInput Frequency: %f\n", camera->tuning[tuningIdx].input_frequency);
+            if (camera->tuning[tuningIdx].is_capturing)
+                printf("\t\tIs Capturing: Yes\n");
+            else
+                printf("\t\tIs Capturing: No\n");
+            if (camera->tuning[tuningIdx].signal_locked)
+                printf("\t\tSignal Locked: Yes\n");
+            else
+                printf("\t\tSignal Locked: No\n");
+            switch (camera->tuning[tuningIdx].tuning_standard)
+            {
+                case tuning_standard_TUNING_AUTO:
+                {
+                    printf("\t\tTuning Standard: Auto\n");
+                    break;
+                }
+                case tuning_standard_TUNING_CUSTOM:
+                {
+                    printf("\t\tTuning Standard: Custom\n");
+                    break;
+                }
+                case tuning_standard_TUNING_NONE:
+                {
+                    printf("\t\tTuning Standard: None\n");
+                    break;
+                }
+                case tuning_standard_TUNING_NTSC:
+                {
+                    printf("\t\tTuning Standard: NTSC\n");
+                    break;
+                }
+                case tuning_standard_TUNING_PAL:
+                {
+                    printf("\t\tTuning Standard: PAL\n");
+                    break;
+                }
+                case tuning_standard_TUNING_SECAM:
+                {
+                    printf("\t\tTuning Standard: SECAM\n");
+                    break;
+                }
+                default:
+                {
+                    printf("\t\tTuning Standard: Unknown\n");
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void print_list_camera_desc(camera_list* list)
+{
+    bool afterFirst = false;
+    if (list && list->count > 0 && list->cameras)
+    {
+        for (size_t i = 0; i < list->count; ++i)
+        {
+            printf("Camera #%lu\n", i);
+            print_camera_desc(list->cameras[i]);
+            if (afterFirst)
+                printf("\n");
+            else
+                afterFirst = true;
+        }
+    }
+}

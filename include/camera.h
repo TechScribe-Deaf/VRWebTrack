@@ -405,9 +405,9 @@ typedef struct
 // I/O Methods
 typedef enum
 {
-    MMAP,
-    USER_PTR,
-    READ_WRITE
+    camera_io_method_MMAP,
+    camera_io_method_USER_PTR,
+    camera_io_method_READ_WRITE
 } camera_io_method;
 
 // Buffers
@@ -426,13 +426,13 @@ typedef struct
 // Enumeration for Tuning Standard
 typedef enum
 {
-    TUNING_NONE = 0,            // No tuning
-    TUNING_NTSC,                // National Television System Committee
-    TUNING_PAL,                 // Phase Alternating Line
-    TUNING_SECAM,               // Sequential Couleur Avec Memoire
-    TUNING_AUTO,                // Auto-detect or multi-standard
-    TUNING_CUSTOM              // Custom or proprietary standard
-} tuning_standard_t;
+    tuning_standard_TUNING_NONE = 0,            // No tuning
+    tuning_standard_TUNING_NTSC,                // National Television System Committee
+    tuning_standard_TUNING_PAL,                 // Phase Alternating Line
+    tuning_standard_TUNING_SECAM,               // Sequential Couleur Avec Memoire
+    tuning_standard_TUNING_AUTO,                // Auto-detect or multi-standard
+    tuning_standard_TUNING_CUSTOM              // Custom or proprietary standard
+} tuning_standard;
 
 // Tuner Status
 typedef struct
