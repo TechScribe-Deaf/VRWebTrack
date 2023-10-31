@@ -423,24 +423,6 @@ typedef struct
     double capture_time_per_frame;
 } camera_streaming_params;
 
-// Status
-typedef struct
-{
-    bool signal_locked;
-    bool is_capturing;
-} camera_status;
-
-// Enumeration for Modulation Scheme
-typedef enum
-{
-    MODULATION_NONE = 0,        // No modulation
-    MODULATION_FSK,             // Frequency-shift keying
-    MODULATION_QAM,             // Quadrature amplitude modulation
-    MODULATION_PSK,             // Phase-shift keying
-    MODULATION_ASK,             // Amplitude-shift keying
-    MODULATION_CUSTOM           // Custom or proprietary scheme
-} modulation_scheme_t;
-
 // Enumeration for Tuning Standard
 typedef enum
 {
@@ -452,19 +434,14 @@ typedef enum
     TUNING_CUSTOM              // Custom or proprietary standard
 } tuning_standard_t;
 
-// Modulator
+// Tuner Status
 typedef struct
 {
-    modulation_scheme_t modulation_scheme;  // Represented as an enum or integer code
-    double frequency;            // Modulation frequency, if applicable
-} camera_modulator;
-
-// Tuning
-typedef struct
-{
+    bool signal_locked;
+    bool is_capturing;
     tuning_standard_t tuning_standard;    // Represented as an enum or integer code
-    double input_frequency;      // Frequency for tuning
-} camera_tuning;
+    double input_frequency;                // Frequency for tuning
+} camera_status_tuning;
 
 // Main Camera Description Device Structure
 typedef struct
@@ -478,9 +455,8 @@ typedef struct
     uint32_t buffers_count;
     camera_buffer_description* buffers;
     camera_streaming_params streaming_params;
-    camera_status status;
-    camera_modulator modulator;
-    camera_tuning tuning;
+    uint32_t tuning_count;
+    camera_status_tuning* tuning;
 } camera_desc;
 
 typedef void (*decoded_rgb_frame_buffer_callback)(const uint8_t *rgb_buffer, uint32_t width, uint32_t height);

@@ -868,26 +868,58 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
                                                 stream_params.parm.capture.timeperframe.denominator;
     camera->streaming_params.capture_time_per_frame = 1.0 / camera->streaming_params.frame_interval;
 
-    struct v4l2_input input = {0};
-    struct v4l2_tuner tuner = {0};
-
-    // Query input (assumes index 0, may need to be modified)
-    input.index = 0;
-    if (ioctl(fd, VIDIOC_ENUMINPUT, &input) == -1) {
-        fprintf(stderr, "Failed to enumerating input for webcam\n");
-        return;
+    uint32_t tuner_count = 0;
+    struct v4l2_tuner tuner_info = {0};
+    while(ioctl(fd, VIDIOC_G_TUNER, &tuner_info) != -1) {
+        tuner_count++;
+        tuner_info.index++;
     }
 
-    // Check for signal lock
-    camera->status.signal_locked = !(input.status & V4L2_IN_ST_NO_SIGNAL);
+    camera->tuning_count = tuner_count;
+    camera->tuning = (camera_status_tuning*) calloc(tuner_count, sizeof(camera_status_tuning));
+
+    for(uint32_t i = 0; i < tuner_count; ++i) {
+        memset(&tuner_info, 0, sizeof(tuner_info));
+        tuner_info.index = i;
+        if(ioctl(fd, VIDIOC_G_TUNER, &tuner_info) == -1) {
+            perror("Error querying tuner");
+            continue;
+        }
+        camera->tuning[i].signal_locked = (tuner_info.signal > 0);
+        struct v4l2_buffer buf = {0};
+
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_MMAP;
+
+        if (ioctl(fd, VIDIOC_QUERYBUF, &buf) == -1) {
+            camera->tuning[i].is_capturing = false;
+        } else {
+            camera->tuning[i].is_capturing = (buf.flags & V4L2_BUF_FLAG_DONE) == V4L2_BUF_FLAG_DONE;
+        }
+        camera->tuning[i].tuning_standard = (tuning_standard_t)tuner_info.audmode;
+        camera->tuning[i].input_frequency = tuner_info.rangelow + tuner_info.rangehigh;
+    }
+
     
-    // Query tuner (assumes index 0, may need to be modified)
-    tuner.index = 0;
-    if (ioctl(fd, VIDIOC_G_TUNER, &tuner) == 0) {
-        camera->status.is_capturing = (tuner.signal > 0);
-    } else {
-        // If we can't query the tuner, it's a good guess that we're not capturing
-        camera->status.is_capturing = false;
+    int modulator_count = 0;
+
+    for (int index = 0; ; ++index) {
+        struct v4l2_modulator modulator = {0};
+        modulator.index = index;
+
+        if (ioctl(fd, VIDIOC_ENUM_MODULATOR, &modulator) == -1) {
+            if (errno == EINVAL || errno == ENOENT) {
+                break; // Enumeration completed
+            }
+            perror("Enumerating modulators");
+            return;
+        }
+
+        // Store the modulator information in your camera descriptor
+        camera->modulator[modulator_count].modulation_scheme = modulator.modulation;
+        camera->modulator[modulator_count].frequency = /* Convert to desired unit */;
+
+        ++modulator_count;
     }
 }
 
