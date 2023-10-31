@@ -482,18 +482,6 @@ typedef void (*decoded_rgb_frame_buffer_callback)(const uint8_t *rgb_buffer, uin
  * 
  * @return Pointer to a `list_cameras` struct containing the array of `camera_desc`
  *         structs and the total number of found camera devices. NULL if the operation fails.
- * 
- * Example usage:
- * @code
- * list_cameras* cameras_list = list_all_camera_devices();
- * if (!cameras_list) {
- *     // Handle error here
- * }
- * // Do something with the cameras_list
- * // ...
- * // Don't forget to free the allocated list_cameras struct when done
- * free_camera_list(cameras_list);
- * @endcode
  */
 camera_list* list_all_camera_devices();
 
