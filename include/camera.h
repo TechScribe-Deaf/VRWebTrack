@@ -16,7 +16,7 @@
 typedef struct camera_t camera_t;
 #endif
 
-enum camera_pixel_format : uint32_t
+typedef enum camera_pixel_format : uint32_t
 {
 /*
 The following code for camera_pixel_format enumeration was
@@ -347,14 +347,20 @@ et al.
     camera_pixel_format_PIX_FMT_QC08C,
     camera_pixel_format_PIX_FMT_QC10C,
     camera_pixel_format_PIX_FMT_AJPG,
-};
+} camera_pixel_format;
 
 // Device Identification
 typedef struct
 {
+    char *card;
     char *device_name;
     char *driver_info;
-    uint32_t supported_standards; // Represented as a bitmask
+    char *version;
+    char *manufacturer;
+    char *bus;
+    char *serial_number;
+    uint32_t capabilities; // Represented as a bitmask
+
 } camera_device_id;
 
 // Capabilities
@@ -365,6 +371,8 @@ typedef struct
     bool supports_async_io;
     bool has_tuner;
     bool has_modulator;
+    bool has_hardware_acceleration;
+    bool has_timestamping;
 } camera_capabilities;
 
 // Frame Rate Fraction
@@ -477,6 +485,67 @@ typedef struct
 } camera_desc;
 
 typedef void (*decoded_rgb_frame_buffer_callback)(const uint8_t *rgb_buffer, uint32_t width, uint32_t height);
+
+/**
+ * @brief Lists all available camera devices on the system.
+ *
+ * This function queries the system for all camera devices that are compatible
+ * with the V4L2 API. It allocates an array of `camera_desc` structs, each
+ * representing a different camera device, and returns this array along with
+ * the total number of devices found.
+ *
+ * The caller is responsible for freeing the allocated `camera_desc` array
+ * when it is no longer needed.
+ *
+ * @param[out] outCameras Pointer to an array of `camera_desc` structs. The array
+ *                        is allocated by this function and should be freed by the caller.
+ *                        Each element contains information about a camera device.
+ * @param[out] outCamerasCount Pointer to a variable where the total number of found
+ *                             cameras will be stored.
+ *
+ * @return 0 on success, or a negative error code on failure.
+ *
+ * Example usage:
+ * @code{.c}
+ * camera_desc* cameras = NULL;
+ * size_t count;
+ * int result = ;
+ * if (list_all_camera_devices(&cameras, &count)) {
+ *      // Handle error here
+ * }
+ * // Do something with the cameras array and count
+ * // ...
+ * // Don't forget to free the allocated array when done
+ * free_camera_devices(cameras);
+ * @endcode
+ */
+int list_all_camera_devices(camera_desc** outCameras, size_t* outCamerasCount);
+
+/**
+ * @brief Frees the memory allocated for an array of `camera_desc` structs.
+ *
+ * This function takes an array of `camera_desc` structs and its size, and
+ * performs the necessary cleanup to free the allocated memory. This function
+ * should be called to free the memory allocated by `list_all_camera_devices`.
+ *
+ * @param[in] cameras Pointer to the array of `camera_desc` structs to be freed.
+ * @param[in] camerasCount The total number of elements in the `cameras` array.
+ *
+ * Example usage:
+ * @code{.c}
+ * camera_desc* cameras = NULL;
+ * size_t count;
+ * int result = ;
+ * if (list_all_camera_devices(&cameras, &count)) {
+ *      // Handle error here
+ * }
+ * // Do something with the cameras array and count
+ * // ...
+ * // Don't forget to free the allocated array when done
+ * free_camera_devices(cameras);
+ * @endcode
+ */
+void free_camera_devices(camera_desc* cameras, size_t camerasCount);
 
 /**
  * @brief Convert YUYV pixel format to RGB pixel format.

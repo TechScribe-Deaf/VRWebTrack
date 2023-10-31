@@ -26,3 +26,12 @@ monitor_deps = [glfw_dep]
 monitor_include_dirs = ['./include']
 
 monitor_exec = executable('vrwebtrack', monitor_src, dependencies: monitor_deps, include_directories: monitor_include_dirs)
+
+# Unit Testing
+
+if host_machine.system() == 'linux'
+    camera_test_exec = executable('test_camera_linux', [camera_src, 'tests/test_camera_linux.c' ], dependencies: camera_deps, include_directories: camera_include_dirs)
+    test('Test List All Camera Devices', camera_test_exec, args: ['test_list_all_camera_devices'])
+elif host_machine.system() == 'windows'
+    # Windows specific source file
+endif

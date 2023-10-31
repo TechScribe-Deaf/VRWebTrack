@@ -10,6 +10,8 @@
 #include <linux/videodev2.h>
 #include <stdatomic.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <dirent.h>
 
 /**
  * @brief Print the capabilities of a webcam.
@@ -65,6 +67,176 @@ int print_caps_of_webcam(int fd, uint32_t width, uint32_t height)
         }
         frmival.index++;
     }
+    return 0;
+}
+
+/**
+ * @brief Clones a substring of the given C-string into a newly allocated string.
+ *
+ * This function allocates a new null-terminated string of size `size + 1` and
+ * copies up to `size` characters from the source string `src` into it. The function
+ * returns a pointer to the new string.
+ *
+ * The caller is responsible for freeing the allocated string using `free()`.
+ *
+ * @param[in] src  Pointer to the source C-string to be cloned.
+ * @param[in] size Number of characters to be copied from the source string.
+ *                 The function will allocate `size + 1` bytes to store these characters
+ *                 along with a null-terminator.
+ *
+ * @return Pointer to the newly allocated string containing the cloned characters,
+ *         or NULL if the memory allocation fails.
+ *
+ * @note The function uses `calloc()` to initialize the new string, so the extra bytes
+ *       will be null-terminated.
+ *
+ * Example usage:
+ * @code{.c}
+ * const char* original = "Hello, world!";
+ * char* clone = strclone(original, 5);  // clone will contain "Hello"
+ * // Do something with the cloned string
+ * // ...
+ * // Don't forget to free the allocated string when done
+ * free(clone);
+ * @endcode
+ */
+static inline char* strclone(const char* src, size_t size)
+{
+    char* newstr = (char*)calloc(1, size + 1);
+    strncpy(newstr, src, size);
+    return newstr;
+}
+
+/**
+ * @brief Reads the content of a file into a newly allocated C-string.
+ *
+ * This function opens a file in binary mode at the specified path, reads its
+ * entire content, and stores it in a newly allocated null-terminated string.
+ * The caller is responsible for freeing the allocated string using `free()`.
+ *
+ * @param[in] path The file path to read.
+ *
+ * @return A pointer to a newly allocated null-terminated string containing the
+ *         file content, or NULL if the file couldn't be read or memory couldn't
+ *         be allocated.
+ *
+ * @note The function reads the file in binary mode to determine its exact size.
+ *       It null-terminates the read content to create a valid C-string.
+ * 
+ * Example usage:
+ * @code{.c}
+ * const char* file_path = "example.txt";
+ * char* file_content = read_file_content(file_path);
+ * if (file_content == NULL) {
+ *     // Handle error here
+ * } else {
+ *     // Do something with the file content
+ *     // ...
+ *     // Don't forget to free the allocated string when done
+ *     free(file_content);
+ * }
+ * @endcode
+ */
+static inline char* read_file_content(const char* path)
+{
+    FILE *fp = fopen(path, "rb");
+    if (fp == NULL) {
+        return NULL;
+    }
+
+    fseek(fp, 0, SEEK_END);
+    size_t file_length = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    char *buffer = malloc(file_length + 1);
+    if (buffer == NULL) {
+        fclose(fp);
+        return NULL;
+    }
+
+    size_t read_size = fread(buffer, 1, file_length, fp);
+    if (read_size != file_length) {
+        free(buffer);
+        fclose(fp);
+        return NULL;
+    }
+
+    buffer[file_length] = '\0';
+
+    fclose(fp);
+
+    return buffer;
+}
+
+static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
+{
+    if (fd < 0)
+    {
+        fprintf(stderr, "Invalid file descriptor for get_camera_device_desc function!\n");
+        return NULL;
+    }
+
+    camera_desc* camera = (camera_desc*)calloc(1, sizeof(camera_desc));
+    if (camera == NULL)
+    {
+        fprintf(stderr, "Failed to allocate camera_desc!\n");
+        return NULL;
+    }
+
+    struct v4l2_capability cap;
+    if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
+        fprintf(stderr,"Failed to query capabilities\n");
+        free(camera);
+        return NULL;
+    }
+
+    printf("Driver: %s\n", cap.driver);
+    printf("Card: %s\n", cap.card);
+    printf("Bus: %s\n", cap.bus_info);
+    printf("Version: %d.%d.%d\n", (cap.version >> 16) & 0xFF, (cap.version >> 8) & 0xFF, cap.version & 0xFF);
+    printf("Capabilities: %08x\n", cap.capabilities);
+
+    camera->device_id.driver_info = strclone(cap.driver, sizeof(cap.driver));
+    camera->device_id.bus = strclone(cap.bus_info, sizeof(cap.bus_info));
+    camera->device_id.version = calloc(1, 13);
+    snprintf(camera->device_id.version, 13, "%d.%d.%d", (cap.version >> 16) & 0xFF, (cap.version >> 8) & 0xFF, cap.version & 0xFF);
+    camera->device_id.capabilities = (uint32_t)cap.capabilities;
+    camera->device_id.card = strclone(cap.card, sizeof(cap.card));
+    camera->device_id.device_name = strclone(cap.card, sizeof(cap.card));
+    char pathToTry[512];
+    snprintf(pathToTry, 512, "/sys/class/video4linux/%s/device/manufacturer", devName);
+    camera->device_id.manufacturer = read_file_content(pathToTry);
+    snprintf(pathToTry, 512, "/sys/class/video4linux/%s/device/serial", devName);
+    camera->device_id.serial_number = read_file_content(pathToTry);
+}
+
+int list_all_camera_devices(camera_desc** outCameras, size_t* outCamerasCount)
+{
+    int fd;
+    DIR *dir;
+    struct dirent *ent;
+
+    if ((dir = opendir("/dev/")) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            if (strstr(ent->d_name, "video") == ent->d_name) {  // Filtering for names that start with "video"
+                char dev_name[261];
+                snprintf(dev_name, sizeof(dev_name), "/dev/%s", ent->d_name);
+
+                if ((fd = open(dev_name, O_RDWR)) == -1) {
+                    fprintf(stderr, "Unable to open video device\n");
+                    continue;  // Skip if the device couldn't be opened
+                }
+
+                
+                close(fd);
+            }
+        }
+        closedir(dir);
+    } else {
+        fprintf(stderr, "Could not open directory\n");
+        return -1;
+    }
+
     return 0;
 }
 

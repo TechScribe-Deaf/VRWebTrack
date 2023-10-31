@@ -8,11 +8,11 @@ VRWebTrack offers an economical solution for full-body tracking in virtual reali
 - Economical Full-Body Tracking with Webcam Integration
 - Scalability: Capable of incorporating three or more webcams; scalability is limited only by your hardware
 - Anti-Jitter Tracking Algorithms
-- Developed in C Language for Enhanced Foreign Function Interface Compatibility
+- Developed in C Language for Foreign Function Interface Compatibility
 - High Level of Customizability for End-Users
 - GPU-based Tracking via Vulkan Compute (Compatible with Intel, AMD, Nvidia, and most GPUs that support Vulkan 1.0)
 - Performance-Centric Design, Aiming for 100 FPS Camera Tracking
-
+- Does not communicate to third party servers, this solution is designed for self-hosted configuration
 #### Platform Compatibility
 
 - Linux: First-Class Support
