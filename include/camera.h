@@ -372,12 +372,11 @@ typedef struct
     bool has_tuner;
     bool has_modulator;
     bool has_hardware_acceleration;
-    bool has_timestamping;
 } camera_capabilities;
 
 // Frame Rate Fraction
 typedef struct {
-    uint32_t frame_rate_nominator;
+    uint32_t frame_rate_numerator;
     uint32_t frame_rate_denominator;
 } frame_rate_fraction;
 
@@ -477,7 +476,7 @@ typedef struct
     camera_controls controls;
     camera_io_method io_method;
     uint32_t buffers_count;
-    camera_buffer_description buffers;
+    camera_buffer_description* buffers;
     camera_streaming_params streaming_params;
     camera_status status;
     camera_modulator modulator;
