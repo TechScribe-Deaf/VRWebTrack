@@ -393,13 +393,13 @@ typedef struct
 // Controls
 typedef struct
 {
-    float brightness;
-    float contrast;
-    float saturation;
-    float hue;
-    float auto_white_balance;
-    float exposure_mode;
-    float gain;
+    int32_t brightness;
+    int32_t contrast;
+    int32_t saturation;
+    int32_t hue;
+    int32_t auto_white_balance;
+    int32_t exposure_mode;
+    int32_t gain;
 } camera_controls;
 
 // I/O Methods

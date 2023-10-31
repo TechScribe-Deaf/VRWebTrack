@@ -168,7 +168,7 @@ static inline char* read_file_content(const char* path)
     return buffer;
 }
 
-enum camera_pixel_format v4l2_to_camera_pixel_format(uint32_t v4l2_pixfmt)
+static camera_pixel_format v4l2_to_camera_pixel_format(uint32_t v4l2_pixfmt)
 {
     switch (v4l2_pixfmt)
     {
@@ -728,9 +728,9 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
 
         struct v4l2_capability cap;
     if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
-        perror("Failed to query capabilities");
-        close(fd);
-        return 1;
+        fprintf(stderr, "Failed to query capabilities\n");
+        free_camera_desc(camera);
+        return NULL;
     }
 
     camera->capabilities.can_capture = (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) != 0;
@@ -740,7 +740,6 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
     camera->capabilities.has_modulator = (cap.capabilities & V4L2_CAP_MODULATOR) != 0;
     camera->capabilities.has_hardware_acceleration = (cap.capabilities & V4L2_CAP_HW_FREQ_SEEK) != 0;
 
-    // First, count the number of supported formats
     uint32_t format_count = 0;
     struct v4l2_fmtdesc fmtdesc;
     fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -750,18 +749,15 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
         fmtdesc.index++;
     }
 
-    // Allocate the formats array
     camera->formats_count = format_count;
     camera->formats = (camera_format*)calloc(format_count, sizeof(camera_format));
 
-    // Now populate the formats array
     fmtdesc.index = 0;
     for (uint32_t i = 0; i < format_count; ++i) {
         ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc);
 
-        // Fill in pixel format here, if needed
+        camera->formats[i].pixel_format = v4l2_to_camera_pixel_format(fmtdesc.pixelformat);
 
-        // Enumerate frame sizes
         struct v4l2_frmsizeenum frmsize;
         frmsize.pixel_format = fmtdesc.pixelformat;
         frmsize.index = 0;
@@ -769,7 +765,6 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
             camera->formats[i].width = frmsize.discrete.width;
             camera->formats[i].height = frmsize.discrete.height;
 
-            // Enumerate frame intervals (frame rates)
             uint32_t fps_count = 0;
             struct v4l2_frmivalenum frmival;
             frmival.pixel_format = fmtdesc.pixelformat;
@@ -794,6 +789,105 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
         }
 
         fmtdesc.index++;
+    }
+
+    struct v4l2_queryctrl queryctrl;
+
+    // Query Brightness
+    queryctrl.id = V4L2_CID_BRIGHTNESS;
+    if (ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl) == 0) {
+        camera->controls.brightness = queryctrl.default_value;
+    }
+
+    // Query Contrast
+    queryctrl.id = V4L2_CID_CONTRAST;
+    if (ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl) == 0) {
+        camera->controls.contrast = queryctrl.default_value;
+    }
+
+    // Query Saturation
+    queryctrl.id = V4L2_CID_SATURATION;
+    if (ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl) == 0) {
+        camera->controls.saturation = queryctrl.default_value;
+    }
+
+    // Query Hue
+    queryctrl.id = V4L2_CID_HUE;
+    if (ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl) == 0) {
+        camera->controls.hue = queryctrl.default_value;
+    }
+
+    // Query Auto White Balance
+    queryctrl.id = V4L2_CID_AUTO_WHITE_BALANCE;
+    if (ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl) == 0) {
+        camera->controls.auto_white_balance = queryctrl.default_value;
+    }
+
+    // Query Exposure Mode
+    queryctrl.id = V4L2_CID_EXPOSURE_AUTO;
+    if (ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl) == 0) {
+        camera->controls.exposure_mode = queryctrl.default_value;
+    }
+
+    // Query Gain
+    queryctrl.id = V4L2_CID_GAIN;
+    if (ioctl(fd, VIDIOC_QUERYCTRL, &queryctrl) == 0) {
+        camera->controls.gain = queryctrl.default_value;
+    }
+
+    struct v4l2_capability cap;
+    if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
+        fprintf(stderr, "Failed to querying capabilities\n");
+        free_camera_desc(camera);
+        return NULL;
+    }
+
+    if ((cap.capabilities & V4L2_CAP_STREAMING) == V4L2_CAP_STREAMING) {
+        // Prefer MMAP if streaming is supported
+        camera->io_method = MMAP;
+    }
+    else if ((cap.capabilities & V4L2_CAP_READWRITE) == V4L2_CAP_READWRITE) {
+        // Fall back to READ_WRITE if device supports it
+        camera->io_method = READ_WRITE;
+    }
+    else {
+        // Use USER_PTR as the last resort
+        camera->io_method = USER_PTR;
+    }
+
+    struct v4l2_streamparm stream_params = {0};
+    stream_params.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+    if (ioctl(fd, VIDIOC_G_PARM, &stream_params) == -1) {
+        fprintf(stderr, "Failed to get streaming parameters\n");
+        free_camera_desc(camera);
+        return NULL;
+    }
+
+    camera->streaming_params.frame_interval = (double)stream_params.parm.capture.timeperframe.numerator /
+                                                stream_params.parm.capture.timeperframe.denominator;
+    camera->streaming_params.capture_time_per_frame = 1.0 / camera->streaming_params.frame_interval;
+
+    struct v4l2_input input = {0};
+    struct v4l2_tuner tuner = {0};
+
+    // Query input (assumes index 0, may need to be modified)
+    input.index = 0;
+    if (ioctl(fd, VIDIOC_ENUMINPUT, &input) == -1) {
+        fprintf(stderr, "Failed to enumerating input for webcam\n");
+        return;
+    }
+
+    // Check for signal lock
+    camera->status.signal_locked = !(input.status & V4L2_IN_ST_NO_SIGNAL);
+    
+    // Query tuner (assumes index 0, may need to be modified)
+    tuner.index = 0;
+    if (ioctl(fd, VIDIOC_G_TUNER, &tuner) == 0) {
+        camera->status.is_capturing = (tuner.signal > 0);
+    } else {
+        // If we can't query the tuner, it's a good guess that we're not capturing
+        camera->status.is_capturing = false;
     }
 }
 
