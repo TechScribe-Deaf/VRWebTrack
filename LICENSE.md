@@ -661,6 +661,8 @@ can be found online at the following link:
 
 https://github.com/torvalds/linux/blob/eb55307e6716b1a02f7db05e27d60e8ca2289c03/include/uapi/linux/videodev2.h#L540
 
+Further inclusion of this code is found in https://github.com/TechScribe-Deaf/VRWebTrack/blob/master/src/camera_linux.c for V4L2 API Enumeration conversion to Platform Agonstic Enumeration of Camera Pixel Formats.
+
 The code at the time of writing on 10/30/2023 10:45PM -7GMT
 was licensed under BSD-3-Clause in the following notice:
 
