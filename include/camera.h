@@ -553,4 +553,17 @@ int write_rgb_to_bmp(const char *file_path, unsigned char *rgb_buffer, int width
  */
 int start_capture(const char *pathToCamera, uint32_t width, uint32_t height, uint32_t fps, decoded_rgb_frame_buffer_callback callback, atomic_int *quit);
 
+/**
+ * @brief Converts a camera_pixel_format enumeration value to its corresponding string representation.
+ *
+ * This function takes a camera_pixel_format enumeration value as an argument and returns a string constant that
+ * represents the corresponding pixel format in a human-readable form. This is useful for debugging or logging purposes.
+ *
+ * @param[in] format The camera_pixel_format enumeration value to be converted to a string.
+ *
+ * @return A string constant corresponding to the camera_pixel_format value. 
+ *         Returns "Unknown" if the format is not recognized.
+ */
+const char* camera_pixel_format_to_str(camera_pixel_format format);
+
 #endif

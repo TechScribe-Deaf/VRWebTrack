@@ -45,6 +45,7 @@
  */
 static inline char* strclone(const char* src, size_t size)
 {
+    if (!src) return NULL;
     char* newstr = (char*)calloc(1, size + 1);
     strncpy(newstr, src, size);
     return newstr;
@@ -911,6 +912,95 @@ camera_list* list_all_camera_devices()
     }
 
     return cameras;
+}
+
+void print_camera_desc(camera_desc* camera)
+{
+    if (camera->device_id.device_name)
+        printf("Name: %s\n", camera->device_id.device_name);
+    if (camera->device_id.driver_info)
+        printf("Driver Info: %s\n", camera->device_id.driver_info);
+    if (camera->device_id.version)
+        printf("Version: %s\n", camera->device_id.version);
+    if (camera->device_id.bus)
+        printf("Bus: %s\n", camera->device_id.bus);
+    if (camera->device_id.card)
+        printf("Card: %s\n", camera->device_id.card);
+    printf("Capabilities: %ui\n", camera->device_id.capabilities);
+    if (camera->device_id.manufacturer)
+        printf("Manufacturer: %s\n", camera->device_id.manufacturer);
+    if (camera->device_id.serial_number)
+        printf("Serial Number: %s\n", camera->device_id.serial_number);
+
+    if (camera->buffers && camera->buffers_count > 0)
+    {
+        printf("Buffer Count: %ui\n", camera->buffers_count);
+        for (uint32_t i = 0; i < camera->buffers_count; ++i)
+        {
+            printf("\tBuffer Size: %ui\n", camera->buffers[i].buffer_size);
+        }
+    }
+
+    printf("Camera Capabilities:\n");
+    if (camera->capabilities.can_capture)
+        printf("\tCan Capture: Yes\n");
+    else
+        printf("\tCan Capture: No\n");
+    
+    if (camera->capabilities.has_hardware_acceleration)
+        printf("\tHas Hardware Acceleration: Yes\n");
+    else
+        printf("\tHas Hardware Acceleration: No\n");
+
+    if (camera->capabilities.has_modulator)
+        printf("\tHas Modulator: Yes\n");
+    else
+        printf("\tHas Modulator: No\n");
+
+    if (camera->capabilities.has_tuner)
+        printf("\tHas Tuner: Yes\n");
+    else
+        printf("\tHas Tuner: No\n");
+    
+    if (camera->capabilities.supports_async_io)
+        printf("\tSupports Async IO: Yes\n");
+    else
+        printf("\tSupports Async IO: No\n");
+
+    if (camera->capabilities.supports_streaming)
+        printf("\tSupports Streaming: Yes\n");
+    else
+        printf("\tSupports Streaming: No\n");
+
+    printf("Current Control Settings:\n");
+    printf("\tAuto White Balance: %ui\n", camera->controls.auto_white_balance);
+    printf("\tBrightness: %ui\n", camera->controls.brightness);
+    printf("\tContrast: %ui\n", camera->controls.contrast);
+    printf("\tExposure Mode: %ui\n", camera->controls.exposure_mode);
+    printf("\tGain: %ui\n", camera->controls.gain);
+    printf("\tHue: %ui\n", camera->controls.hue);
+    printf("\tSaturation: %ui\n", camera->controls.saturation);
+
+    if (camera->formats && camera->formats_count > 0)
+    {
+        printf("Available Formats:\n");
+        for (uint32_t formatIdx = 0; formatIdx < camera->formats_count; ++formatIdx)
+        {
+            printf("\tWidth: %ui\n", camera->formats[formatIdx].width);
+            printf("\tHeight: %ui\n", camera->formats[formatIdx].height);
+            printf("\tPixel Format: %s\n", camera_pixel_format_to_str(camera->formats[formatIdx].pixel_format));
+            if (camera->formats[formatIdx].fps && camera->formats[formatIdx].fps_count > 0)
+            {
+                printf("\tAvailable Frame Per Second Configurations:\n");
+                for (uint32_t fpsIdx = 0; fpsIdx < camera->formats[formatIdx].fps_count; ++fpsIdx)
+                {
+                    printf("\t\tFPS: %ui / %ui\n", 
+                        camera->formats[formatIdx].fps[fpsIdx].frame_rate_numerator,
+                        camera->formats[formatIdx].fps[fpsIdx].frame_rate_denominator);
+                }
+            }
+        }
+    }
 }
 
 /**
