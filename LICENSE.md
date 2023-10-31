@@ -714,6 +714,9 @@ no #if __KERNEL tests are allowed here
 See https://linuxtv.org for more info
 
 Author: Bill Dirks <bill@thedirks.org>
+
 Justin Schoeman
+
 Hans Verkuil <hverkuil@xs4all.nl>
+
 et al.
