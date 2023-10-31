@@ -11,6 +11,8 @@
 - Implement Ray Scoping Optimization in Compute Shader
 - Implement OpenVR in Monitor Process to feed tracker information to SteamVR
 - Implement Mediapipe optionally for easier tracker placement on body
+- Write documentation/manual
+- Provide C#/Python/Crystal programming languages binding to demonstrate FFI
 
 ## Info
 
