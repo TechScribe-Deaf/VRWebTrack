@@ -557,18 +557,20 @@ void print_camera_desc(camera_desc* camera)
         printf("Bus: %s\n", camera->device_id.bus);
     if (camera->device_id.card)
         printf("Card: %s\n", camera->device_id.card);
-    printf("Capabilities: %ui\n", camera->device_id.capabilities);
+    printf("Capabilities: %u\n", camera->device_id.capabilities);
     if (camera->device_id.manufacturer)
         printf("Manufacturer: %s\n", camera->device_id.manufacturer);
     if (camera->device_id.serial_number)
         printf("Serial Number: %s\n", camera->device_id.serial_number);
+    if (camera->device_id.devPath)
+        printf("Device Path: %s\n", camera->device_id.devPath);
 
     if (camera->buffers && camera->buffers_count > 0)
     {
-        printf("Buffer Count: %ui\n", camera->buffers_count);
+        printf("Buffer Count: %u\n", camera->buffers_count);
         for (uint32_t i = 0; i < camera->buffers_count; ++i)
         {
-            printf("\tBuffer Size: %ui\n", camera->buffers[i].buffer_size);
+            printf("\tBuffer Size: %u\n", camera->buffers[i].buffer_size);
         }
     }
 
@@ -604,28 +606,28 @@ void print_camera_desc(camera_desc* camera)
         printf("\tSupports Streaming: No\n");
 
     printf("Current Control Settings:\n");
-    printf("\tAuto White Balance: %ui\n", camera->controls.auto_white_balance);
-    printf("\tBrightness: %ui\n", camera->controls.brightness);
-    printf("\tContrast: %ui\n", camera->controls.contrast);
-    printf("\tExposure Mode: %ui\n", camera->controls.exposure_mode);
-    printf("\tGain: %ui\n", camera->controls.gain);
-    printf("\tHue: %ui\n", camera->controls.hue);
-    printf("\tSaturation: %ui\n", camera->controls.saturation);
+    printf("\tAuto White Balance: %u\n", camera->controls.auto_white_balance);
+    printf("\tBrightness: %u\n", camera->controls.brightness);
+    printf("\tContrast: %u\n", camera->controls.contrast);
+    printf("\tExposure Mode: %u\n", camera->controls.exposure_mode);
+    printf("\tGain: %u\n", camera->controls.gain);
+    printf("\tHue: %u\n", camera->controls.hue);
+    printf("\tSaturation: %u\n", camera->controls.saturation);
 
     if (camera->formats && camera->formats_count > 0)
     {
         printf("Available Formats:\n");
         for (uint32_t formatIdx = 0; formatIdx < camera->formats_count; ++formatIdx)
         {
-            printf("\tWidth: %ui\n", camera->formats[formatIdx].width);
-            printf("\tHeight: %ui\n", camera->formats[formatIdx].height);
+            printf("\tWidth: %u\n", camera->formats[formatIdx].width);
+            printf("\tHeight: %u\n", camera->formats[formatIdx].height);
             printf("\tPixel Format: %s\n", camera_pixel_format_to_str(camera->formats[formatIdx].pixel_format));
             if (camera->formats[formatIdx].fps && camera->formats[formatIdx].fps_count > 0)
             {
                 printf("\tAvailable Frame Per Second Configurations:\n");
                 for (uint32_t fpsIdx = 0; fpsIdx < camera->formats[formatIdx].fps_count; ++fpsIdx)
                 {
-                    printf("\t\tFPS: %ui / %ui\n", 
+                    printf("\t\tFPS: %u / %u\n", 
                         camera->formats[formatIdx].fps[fpsIdx].frame_rate_numerator,
                         camera->formats[formatIdx].fps[fpsIdx].frame_rate_denominator);
                 }
@@ -658,15 +660,15 @@ void print_camera_desc(camera_desc* camera)
     }
 
     printf("Streaming Params\n");
-    printf("\tCapture Time Per Frame: %ui\n", camera->streaming_params.capture_time_per_frame);
-    printf("\tFrame Interval: %ui\n", camera->streaming_params.frame_interval);
+    printf("\tCapture Time Per Frame: %f\n", camera->streaming_params.capture_time_per_frame);
+    printf("\tFrame Interval: %f\n", camera->streaming_params.frame_interval);
 
     if (camera->tuning && camera->tuning_count > 0)
     {
         printf("Tuning Configurations:\n");
         for (uint32_t tuningIdx = 0; tuningIdx < camera->tuning_count; ++tuningIdx)
         {
-            printf("\tTuning #%ui\n", tuningIdx);
+            printf("\tTuning #%u\n", tuningIdx);
             printf("\t\tInput Frequency: %f\n", camera->tuning[tuningIdx].input_frequency);
             if (camera->tuning[tuningIdx].is_capturing)
                 printf("\t\tIs Capturing: Yes\n");

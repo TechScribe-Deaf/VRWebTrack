@@ -359,6 +359,7 @@ typedef struct
     char *manufacturer;
     char *bus;
     char *serial_number;
+    char *devPath;
     uint32_t capabilities; // Represented as a bitmask
 
 } camera_device_id;
@@ -439,7 +440,7 @@ typedef struct
 {
     bool signal_locked;
     bool is_capturing;
-    tuning_standard_t tuning_standard;    // Represented as an enum or integer code
+    tuning_standard tuning_standard;    // Represented as an enum or integer code
     double input_frequency;                // Frequency for tuning
 } camera_status_tuning;
 
@@ -566,4 +567,25 @@ int start_capture(const char *pathToCamera, uint32_t width, uint32_t height, uin
  */
 const char* camera_pixel_format_to_str(camera_pixel_format format);
 
+/**
+ * @brief Prints the description of a single camera device.
+ *
+ * This function takes a pointer to a `camera_desc` structure as an argument and
+ * outputs a human-readable description of the camera to the standard output.
+ * This is useful for debugging, logging, or simply providing information about the camera.
+ *
+ * @param[in] camera Pointer to the `camera_desc` structure containing the camera's information.
+ */
+void print_camera_desc(camera_desc* camera);
+
+/**
+ * @brief Prints the description of all camera devices in a list.
+ *
+ * This function takes a pointer to a `camera_list` structure as an argument and
+ * outputs a human-readable description of each camera in the list to the standard output.
+ * This is useful for debugging, logging, or simply providing information about the cameras.
+ *
+ * @param[in] list Pointer to the `camera_list` structure containing the list of cameras.
+ */
+void print_list_camera_desc(camera_list* list);
 #endif

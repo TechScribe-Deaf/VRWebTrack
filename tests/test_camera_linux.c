@@ -10,7 +10,7 @@ int test_list_all_camera_devices()
     }
     if (!ret && list->count > 0)
     {
-        
+        print_list_camera_desc(list);
     }
     return ret;
 }

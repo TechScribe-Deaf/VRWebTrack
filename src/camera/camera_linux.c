@@ -633,7 +633,6 @@ static camera_desc* get_camera_device_desc(int fd, const char* devName)
     camera->device_id.bus = strclone((const char*)cap.bus_info, sizeof(cap.bus_info));
     camera->device_id.version = calloc(1, 13);
     snprintf(camera->device_id.version, 13, "%d.%d.%d", (cap.version >> 16) & 0xFF, (cap.version >> 8) & 0xFF, cap.version & 0xFF);
-    camera->device_id.capabilities = (uint32_t)cap.capabilities;
     camera->device_id.card = strclone((const char*)cap.card, sizeof(cap.card));
     camera->device_id.device_name = strclone((const char*)cap.card, sizeof(cap.card));
     char pathToTry[512];
@@ -641,6 +640,10 @@ static camera_desc* get_camera_device_desc(int fd, const char* devName)
     camera->device_id.manufacturer = read_file_content(pathToTry);
     snprintf(pathToTry, 512, "/sys/class/video4linux/%s/device/serial", devName);
     camera->device_id.serial_number = read_file_content(pathToTry);
+    if (devName)
+        camera->device_id.devPath = strclone(devName, strlen(devName));
+    else
+        camera->device_id.devPath = "";
 
     uint32_t attempt = 4;
     struct v4l2_requestbuffers req;
