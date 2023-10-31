@@ -899,28 +899,6 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
         camera->tuning[i].tuning_standard = (tuning_standard_t)tuner_info.audmode;
         camera->tuning[i].input_frequency = tuner_info.rangelow + tuner_info.rangehigh;
     }
-
-    
-    int modulator_count = 0;
-
-    for (int index = 0; ; ++index) {
-        struct v4l2_modulator modulator = {0};
-        modulator.index = index;
-
-        if (ioctl(fd, VIDIOC_ENUM_MODULATOR, &modulator) == -1) {
-            if (errno == EINVAL || errno == ENOENT) {
-                break; // Enumeration completed
-            }
-            perror("Enumerating modulators");
-            return;
-        }
-
-        // Store the modulator information in your camera descriptor
-        camera->modulator[modulator_count].modulation_scheme = modulator.modulation;
-        camera->modulator[modulator_count].frequency = /* Convert to desired unit */;
-
-        ++modulator_count;
-    }
 }
 
 int list_all_camera_devices(camera_desc** outCameras, size_t* outCamerasCount)
