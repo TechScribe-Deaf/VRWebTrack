@@ -168,6 +168,453 @@ static inline char* read_file_content(const char* path)
     return buffer;
 }
 
+enum camera_pixel_format v4l2_to_camera_pixel_format(uint32_t v4l2_pixfmt)
+{
+    switch (v4l2_pixfmt)
+    {
+        case V4L2_PIX_FMT_RGB332:
+            return camera_pixel_format_RGB332;
+        case V4L2_PIX_FMT_RGB444:
+            return camera_pixel_format_RGB444;
+        case V4L2_PIX_FMT_ARGB444:
+            return camera_pixel_format_ARGB444;
+        case V4L2_PIX_FMT_XRGB444:
+            return camera_pixel_format_XRGB444;
+        case V4L2_PIX_FMT_RGBA444:
+            return camera_pixel_format_RGBA444;
+        case V4L2_PIX_FMT_RGBX444:
+            return camera_pixel_format_RGBX444;
+        case V4L2_PIX_FMT_ABGR444:
+            return camera_pixel_format_ABGR444;
+        case V4L2_PIX_FMT_XBGR444:
+            return camera_pixel_format_XBGR444;
+        case V4L2_PIX_FMT_BGRA444:
+            return camera_pixel_format_BGRA444;
+        case V4L2_PIX_FMT_BGRX444:
+            return camera_pixel_format_BGRX444;
+        case V4L2_PIX_FMT_RGB555:
+            return camera_pixel_format_RGB555;
+        case V4L2_PIX_FMT_ARGB555:
+            return camera_pixel_format_ARGB555;
+        case V4L2_PIX_FMT_XRGB555:
+            return camera_pixel_format_XRGB555;
+        case V4L2_PIX_FMT_RGBA555:
+            return camera_pixel_format_RGBA555;
+        case V4L2_PIX_FMT_RGBX555:
+            return camera_pixel_format_RGBX555;
+        case V4L2_PIX_FMT_ABGR555:
+            return camera_pixel_format_ABGR555;
+        case V4L2_PIX_FMT_XBGR555:
+            return camera_pixel_format_XBGR555;
+        case V4L2_PIX_FMT_BGRA555:
+            return camera_pixel_format_BGRA555;
+        case V4L2_PIX_FMT_BGRX555:
+            return camera_pixel_format_BGRX555;
+        case V4L2_PIX_FMT_RGB565:
+            return camera_pixel_format_RGB565;
+        case V4L2_PIX_FMT_RGB555X:
+            return camera_pixel_format_RGB555X;
+        case V4L2_PIX_FMT_ARGB555X:
+            return camera_pixel_format_ARGB555X;
+        case V4L2_PIX_FMT_XRGB555X:
+            return camera_pixel_format_XRGB555X;
+        case V4L2_PIX_FMT_RGB565X:
+            return camera_pixel_format_RGB565X;
+        case V4L2_PIX_FMT_BGR666:
+            return camera_pixel_format_BGR666;
+        case V4L2_PIX_FMT_BGR24:
+            return camera_pixel_format_BGR24;
+        case V4L2_PIX_FMT_RGB24:
+            return camera_pixel_format_RGB24;
+        case V4L2_PIX_FMT_BGR32:
+            return camera_pixel_format_BGR32;
+        case V4L2_PIX_FMT_ABGR32:
+            return camera_pixel_format_ABGR32;
+        case V4L2_PIX_FMT_XBGR32:
+            return camera_pixel_format_XBGR32;
+        case V4L2_PIX_FMT_BGRA32:
+            return camera_pixel_format_BGRA32;
+        case V4L2_PIX_FMT_BGRX32:
+            return camera_pixel_format_BGRX32;
+        case V4L2_PIX_FMT_RGB32:
+            return camera_pixel_format_RGB32;
+        case V4L2_PIX_FMT_RGBA32:
+            return camera_pixel_format_RGBA32;
+        case V4L2_PIX_FMT_RGBX32:
+            return camera_pixel_format_RGBX32;
+        case V4L2_PIX_FMT_ARGB32:
+            return camera_pixel_format_ARGB32;
+        case V4L2_PIX_FMT_XRGB32:
+            return camera_pixel_format_XRGB32;
+        case V4L2_PIX_FMT_RGBX1010102:
+            return camera_pixel_format_RGBX1010102;
+        case V4L2_PIX_FMT_RGBA1010102:
+            return camera_pixel_format_RGBA1010102;
+        case V4L2_PIX_FMT_ARGB2101010:
+            return camera_pixel_format_ARGB2101010;
+        case V4L2_PIX_FMT_BGR48_12:
+            return camera_pixel_format_BGR48_12;
+        case V4L2_PIX_FMT_ABGR64_12:
+            return camera_pixel_format_ABGR64_12;
+        case V4L2_PIX_FMT_GREY:
+            return camera_pixel_format_GREY;
+        case V4L2_PIX_FMT_Y4:
+            return camera_pixel_format_Y4;
+        case V4L2_PIX_FMT_Y6:
+            return camera_pixel_format_Y6;
+        case V4L2_PIX_FMT_Y10:
+            return camera_pixel_format_Y10;
+        case V4L2_PIX_FMT_Y12:
+            return camera_pixel_format_Y12;
+        case V4L2_PIX_FMT_Y012:
+            return camera_pixel_format_Y012;
+        case V4L2_PIX_FMT_Y14:
+            return camera_pixel_format_Y14;
+        case V4L2_PIX_FMT_Y16:
+            return camera_pixel_format_Y16;
+        case V4L2_PIX_FMT_Y16_BE:
+            return camera_pixel_format_Y16_BE;
+        case V4L2_PIX_FMT_Y10BPACK:
+            return camera_pixel_format_Y10BPACK;
+        case V4L2_PIX_FMT_Y10P:
+            return camera_pixel_format_Y10P;
+        case V4L2_PIX_FMT_IPU3_Y10:
+            return camera_pixel_format_IPU3_Y10;
+        case V4L2_PIX_FMT_PAL8:
+            return camera_pixel_format_PAL8;
+        case V4L2_PIX_FMT_UV8:
+            return camera_pixel_format_UV8;
+        case V4L2_PIX_FMT_YUYV:
+            return camera_pixel_format_YUYV;
+        case V4L2_PIX_FMT_YYUV:
+            return camera_pixel_format_YYUV;
+        case V4L2_PIX_FMT_YVYU:
+            return camera_pixel_format_YVYU;
+        case V4L2_PIX_FMT_UYVY:
+            return camera_pixel_format_UYVY;
+        case V4L2_PIX_FMT_VYUY:
+            return camera_pixel_format_VYUY;
+        case V4L2_PIX_FMT_Y41P:
+            return camera_pixel_format_Y41P;
+        case V4L2_PIX_FMT_YUV444:
+            return camera_pixel_format_YUV444;
+        case V4L2_PIX_FMT_YUV555:
+            return camera_pixel_format_YUV555;
+        case V4L2_PIX_FMT_YUV565:
+            return camera_pixel_format_YUV565;
+        case V4L2_PIX_FMT_YUV24:
+            return camera_pixel_format_YUV24;
+        case V4L2_PIX_FMT_YUV32:
+            return camera_pixel_format_YUV32;
+        case V4L2_PIX_FMT_AYUV32:
+            return camera_pixel_format_AYUV32;
+        case V4L2_PIX_FMT_XYUV32:
+            return camera_pixel_format_XYUV32;
+        case V4L2_PIX_FMT_VUYA32:
+            return camera_pixel_format_VUYA32;
+        case V4L2_PIX_FMT_VUYX32:
+            return camera_pixel_format_VUYX32;
+        case V4L2_PIX_FMT_YUVA32:
+            return camera_pixel_format_YUVA32;
+        case V4L2_PIX_FMT_YUVX32:
+            return camera_pixel_format_YUVX32;
+        case V4L2_PIX_FMT_M420:
+            return camera_pixel_format_M420;
+        case V4L2_PIX_FMT_YUV48_12:
+            return camera_pixel_format_YUV48_12;
+        case V4L2_PIX_FMT_Y210:
+            return camera_pixel_format_Y210;
+        case V4L2_PIX_FMT_Y212:
+            return camera_pixel_format_Y212;
+        case V4L2_PIX_FMT_Y216:
+            return camera_pixel_format_Y216;
+        case V4L2_PIX_FMT_NV12:
+            return camera_pixel_format_NV12;
+        case V4L2_PIX_FMT_NV21:
+            return camera_pixel_format_NV21;
+        case V4L2_PIX_FMT_NV16:
+            return camera_pixel_format_NV16;
+        case V4L2_PIX_FMT_NV61:
+            return camera_pixel_format_NV61;
+        case V4L2_PIX_FMT_NV24:
+            return camera_pixel_format_NV24;
+        case V4L2_PIX_FMT_NV42:
+            return camera_pixel_format_NV42;
+        case V4L2_PIX_FMT_P010:
+            return camera_pixel_format_P010;
+        case V4L2_PIX_FMT_P012:
+            return camera_pixel_format_P012;
+        case V4L2_PIX_FMT_NV12M:
+            return camera_pixel_format_NV12M;
+        case V4L2_PIX_FMT_NV21M:
+            return camera_pixel_format_NV21M;
+        case V4L2_PIX_FMT_NV16M:
+            return camera_pixel_format_NV16M;
+        case V4L2_PIX_FMT_NV61M:
+            return camera_pixel_format_NV61M;
+        case V4L2_PIX_FMT_P012M:
+            return camera_pixel_format_P012M;
+        case V4L2_PIX_FMT_YUV410:
+            return camera_pixel_format_YUV410;
+        case V4L2_PIX_FMT_YVU410:
+            return camera_pixel_format_YVU410;
+        case V4L2_PIX_FMT_YUV411P:
+            return camera_pixel_format_YUV411P;
+        case V4L2_PIX_FMT_YUV420:
+            return camera_pixel_format_YUV420;
+        case V4L2_PIX_FMT_YVU420:
+            return camera_pixel_format_YVU420;
+        case V4L2_PIX_FMT_YUV422P:
+            return camera_pixel_format_YUV422P;
+        case V4L2_PIX_FMT_YUV420M:
+            return camera_pixel_format_YUV420M;
+        case V4L2_PIX_FMT_YVU420M:
+            return camera_pixel_format_YVU420M;
+        case V4L2_PIX_FMT_YUV422M:
+            return camera_pixel_format_YUV422M;
+        case V4L2_PIX_FMT_YVU422M:
+            return camera_pixel_format_YVU422M;
+        case V4L2_PIX_FMT_YUV444M:
+            return camera_pixel_format_YUV444M;
+        case V4L2_PIX_FMT_YVU444M:
+            return camera_pixel_format_YVU444M;
+        case V4L2_PIX_FMT_NV12_4L4:
+            return camera_pixel_format_NV12_4L4;
+        case V4L2_PIX_FMT_NV12_16L16:
+            return camera_pixel_format_NV12_16L16;
+        case V4L2_PIX_FMT_NV12_32L32:
+            return camera_pixel_format_NV12_32L32;
+        case V4L2_PIX_FMT_P010_4L4:
+            return camera_pixel_format_P010_4L4;
+        case V4L2_PIX_FMT_NV12_8L128:
+            return camera_pixel_format_NV12_8L128;
+        case V4L2_PIX_FMT_NV12_10BE_8L128:
+            return camera_pixel_format_NV12_10BE_8L128;
+        case V4L2_PIX_FMT_NV12MT:
+            return camera_pixel_format_NV12MT;
+        case V4L2_PIX_FMT_NV12MT_16X16:
+            return camera_pixel_format_NV12MT_16X16;
+        case V4L2_PIX_FMT_NV12M_8L128:
+            return camera_pixel_format_NV12M_8L128;
+        case V4L2_PIX_FMT_NV12M_10BE_8L128:
+            return camera_pixel_format_NV12M_10BE_8L128;
+        case V4L2_PIX_FMT_SBGGR8:
+            return camera_pixel_format_SBGGR8;
+        case V4L2_PIX_FMT_SGBRG8:
+            return camera_pixel_format_SGBRG8;
+        case V4L2_PIX_FMT_SGRBG8:
+            return camera_pixel_format_SGRBG8;
+        case V4L2_PIX_FMT_SRGGB8:
+            return camera_pixel_format_SRGGB8;
+        case V4L2_PIX_FMT_SBGGR10:
+            return camera_pixel_format_SBGGR10;
+        case V4L2_PIX_FMT_SGBRG10:
+            return camera_pixel_format_SGBRG10;
+        case V4L2_PIX_FMT_SGRBG10:
+            return camera_pixel_format_SGRBG10;
+        case V4L2_PIX_FMT_SRGGB10:
+            return camera_pixel_format_SRGGB10;
+        case V4L2_PIX_FMT_SBGGR10P:
+            return camera_pixel_format_SBGGR10P;
+        case V4L2_PIX_FMT_SGBRG10P:
+            return camera_pixel_format_SGBRG10P;
+        case V4L2_PIX_FMT_SGRBG10P:
+            return camera_pixel_format_SGRBG10P;
+        case V4L2_PIX_FMT_SRGGB10P:
+            return camera_pixel_format_SRGGB10P;
+        case V4L2_PIX_FMT_SBGGR10ALAW8:
+            return camera_pixel_format_SBGGR10ALAW8;
+        case V4L2_PIX_FMT_SGBRG10ALAW8:
+            return camera_pixel_format_SGBRG10ALAW8;
+        case V4L2_PIX_FMT_SGRBG10ALAW8:
+            return camera_pixel_format_SGRBG10ALAW8;
+        case V4L2_PIX_FMT_SRGGB10ALAW8:
+            return camera_pixel_format_SRGGB10ALAW8;
+        case V4L2_PIX_FMT_SBGGR10DPCM8:
+            return camera_pixel_format_SBGGR10DPCM8;
+        case V4L2_PIX_FMT_SGBRG10DPCM8:
+            return camera_pixel_format_SGBRG10DPCM8;
+        case V4L2_PIX_FMT_SGRBG10DPCM8:
+            return camera_pixel_format_SGRBG10DPCM8;
+        case V4L2_PIX_FMT_SRGGB10DPCM8:
+            return camera_pixel_format_SRGGB10DPCM8;
+        case V4L2_PIX_FMT_SBGGR12:
+            return camera_pixel_format_SBGGR12;
+        case V4L2_PIX_FMT_SGBRG12:
+            return camera_pixel_format_SGBRG12;
+        case V4L2_PIX_FMT_SGRBG12:
+            return camera_pixel_format_SGRBG12;
+        case V4L2_PIX_FMT_SRGGB12:
+            return camera_pixel_format_SRGGB12;
+        case V4L2_PIX_FMT_SBGGR12P:
+            return camera_pixel_format_SBGGR12P;
+        case V4L2_PIX_FMT_SGBRG12P:
+            return camera_pixel_format_SGBRG12P;
+        case V4L2_PIX_FMT_SGRBG12P:
+            return camera_pixel_format_SGRBG12P;
+        case V4L2_PIX_FMT_SRGGB12P:
+            return camera_pixel_format_SRGGB12P;
+        case V4L2_PIX_FMT_SBGGR14:
+            return camera_pixel_format_SBGGR14;
+        case V4L2_PIX_FMT_SGBRG14:
+            return camera_pixel_format_SGBRG14;
+        case V4L2_PIX_FMT_SGRBG14:
+            return camera_pixel_format_SGRBG14;
+        case V4L2_PIX_FMT_SRGGB14:
+            return camera_pixel_format_SRGGB14;
+        case V4L2_PIX_FMT_SBGGR14P:
+            return camera_pixel_format_SBGGR14P;
+        case V4L2_PIX_FMT_SGBRG14P:
+            return camera_pixel_format_SGBRG14P;
+        case V4L2_PIX_FMT_SGRBG14P:
+            return camera_pixel_format_SGRBG14P;
+        case V4L2_PIX_FMT_SRGGB14P:
+            return camera_pixel_format_SRGGB14P;
+        case V4L2_PIX_FMT_SBGGR16:
+            return camera_pixel_format_SBGGR16;
+        case V4L2_PIX_FMT_SGBRG16:
+            return camera_pixel_format_SGBRG16;
+        case V4L2_PIX_FMT_SGRBG16:
+            return camera_pixel_format_SGRBG16;
+        case V4L2_PIX_FMT_SRGGB16:
+            return camera_pixel_format_SRGGB16;
+        case V4L2_PIX_FMT_HSV24:
+            return camera_pixel_format_HSV24;
+        case V4L2_PIX_FMT_HSV32:
+            return camera_pixel_format_HSV32;
+        case V4L2_PIX_FMT_MJPEG:
+            return camera_pixel_format_MJPEG;
+        case V4L2_PIX_FMT_JPEG:
+            return camera_pixel_format_JPEG;
+        case V4L2_PIX_FMT_DV:
+            return camera_pixel_format_DV;
+        case V4L2_PIX_FMT_MPEG:
+            return camera_pixel_format_MPEG;
+        case V4L2_PIX_FMT_H264:
+            return camera_pixel_format_H264;
+        case V4L2_PIX_FMT_H264_NO_SC:
+            return camera_pixel_format_H264_NO_SC;
+        case V4L2_PIX_FMT_H264_MVC:
+            return camera_pixel_format_H264_MVC;
+        case V4L2_PIX_FMT_H263:
+            return camera_pixel_format_H263;
+        case V4L2_PIX_FMT_MPEG1:
+            return camera_pixel_format_MPEG1;
+        case V4L2_PIX_FMT_MPEG2:
+            return camera_pixel_format_MPEG2;
+        case V4L2_PIX_FMT_MPEG2_SLICE:
+            return camera_pixel_format_MPEG2_SLICE;
+        case V4L2_PIX_FMT_MPEG4:
+            return camera_pixel_format_MPEG4;
+        case V4L2_PIX_FMT_XVID:
+            return camera_pixel_format_XVID;
+        case V4L2_PIX_FMT_VC1_ANNEX_G:
+            return camera_pixel_format_VC1_ANNEX_G;
+        case V4L2_PIX_FMT_VC1_ANNEX_L:
+            return camera_pixel_format_VC1_ANNEX_L;
+        case V4L2_PIX_FMT_VP8:
+            return camera_pixel_format_VP8;
+        case V4L2_PIX_FMT_VP8_FRAME:
+            return camera_pixel_format_VP8_FRAME;
+        case V4L2_PIX_FMT_VP9:
+            return camera_pixel_format_VP9;
+        case V4L2_PIX_FMT_VP9_FRAME:
+            return camera_pixel_format_VP9_FRAME;
+        case V4L2_PIX_FMT_HEVC:
+            return camera_pixel_format_HEVC;
+        case V4L2_PIX_FMT_FWHT:
+            return camera_pixel_format_FWHT;
+        case V4L2_PIX_FMT_FWHT_STATELESS:
+            return camera_pixel_format_FWHT_STATELESS;
+        case V4L2_PIX_FMT_H264_SLICE:
+            return camera_pixel_format_H264_SLICE;
+        case V4L2_PIX_FMT_HEVC_SLICE:
+            return camera_pixel_format_HEVC_SLICE;
+        case V4L2_PIX_FMT_SPK:
+            return camera_pixel_format_SPK;
+        case V4L2_PIX_FMT_RV30:
+            return camera_pixel_format_RV30;
+        case V4L2_PIX_FMT_RV40:
+            return camera_pixel_format_RV40;
+        case V4L2_PIX_FMT_CPIA1:
+            return camera_pixel_format_CPIA1;
+        case V4L2_PIX_FMT_WNVA:
+            return camera_pixel_format_WNVA;
+        case V4L2_PIX_FMT_SN9C10X:
+            return camera_pixel_format_SN9C10X;
+        case V4L2_PIX_FMT_SN9C20X_I420:
+            return camera_pixel_format_SN9C20X_I420;
+        case V4L2_PIX_FMT_PWC1:
+            return camera_pixel_format_PWC1;
+        case V4L2_PIX_FMT_PWC2:
+            return camera_pixel_format_PWC2;
+        case V4L2_PIX_FMT_ET61X251:
+            return camera_pixel_format_ET61X251;
+        case V4L2_PIX_FMT_SPCA501:
+            return camera_pixel_format_SPCA501;
+        case V4L2_PIX_FMT_SPCA505:
+            return camera_pixel_format_SPCA505;
+        case V4L2_PIX_FMT_SPCA508:
+            return camera_pixel_format_SPCA508;
+        case V4L2_PIX_FMT_SPCA561:
+            return camera_pixel_format_SPCA561;
+        case V4L2_PIX_FMT_PAC207:
+            return camera_pixel_format_PAC207;
+        case V4L2_PIX_FMT_MR97310A:
+            return camera_pixel_format_MR97310A;
+        case V4L2_PIX_FMT_JL2005BCD:
+            return camera_pixel_format_JL2005BCD;
+        case V4L2_PIX_FMT_SN9C2028:
+            return camera_pixel_format_SN9C2028;
+        case V4L2_PIX_FMT_SQ905C:
+            return camera_pixel_format_SQ905C;
+        case V4L2_PIX_FMT_PJPG:
+            return camera_pixel_format_PJPG;
+        case V4L2_PIX_FMT_OV511:
+            return camera_pixel_format_OV511;
+        case V4L2_PIX_FMT_OV518:
+            return camera_pixel_format_OV518;
+        case V4L2_PIX_FMT_STV0680:
+            return camera_pixel_format_STV0680;
+        case V4L2_PIX_FMT_TM6000:
+            return camera_pixel_format_TM6000;
+        case V4L2_PIX_FMT_CIT_YYVYUY:
+            return camera_pixel_format_CIT_YYVYUY;
+        case V4L2_PIX_FMT_KONICA420:
+            return camera_pixel_format_KONICA420;
+        case V4L2_PIX_FMT_JPGL:
+            return camera_pixel_format_JPGL;
+        case V4L2_PIX_FMT_SE401:
+            return camera_pixel_format_SE401;
+        case V4L2_PIX_FMT_S5C_UYVY_JPG:
+            return camera_pixel_format_S5C_UYVY_JPG;
+        case V4L2_PIX_FMT_Y8I:
+            return camera_pixel_format_Y8I;
+        case V4L2_PIX_FMT_Y12I:
+            return camera_pixel_format_Y12I;
+        case V4L2_PIX_FMT_Z16:
+            return camera_pixel_format_Z16;
+        case V4L2_PIX_FMT_MT21C:
+            return camera_pixel_format_MT21C;
+        case V4L2_PIX_FMT_MM21:
+            return camera_pixel_format_MM21;
+        case V4L2_PIX_FMT_INZI:
+            return camera_pixel_format_INZI;
+        case V4L2_PIX_FMT_CNF4:
+            return camera_pixel_format_CNF4;
+        case V4L2_PIX_FMT_HI240:
+            return camera_pixel_format_HI240;
+        case V4L2_PIX_FMT_QC08C:
+            return camera_pixel_format_QC08C;
+        case V4L2_PIX_FMT_QC10C:
+            return camera_pixel_format_QC10C;
+        case V4L2_PIX_FMT_AJPG:
+            return camera_pixel_format_AJPG;
+        default:
+            return camera_pixel_format_unknown;
+    }
+}
+
 void free_camera_desc(camera_desc* camera)
 {
     if (camera == NULL)
@@ -293,6 +740,7 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
     camera->capabilities.has_modulator = (cap.capabilities & V4L2_CAP_MODULATOR) != 0;
     camera->capabilities.has_hardware_acceleration = (cap.capabilities & V4L2_CAP_HW_FREQ_SEEK) != 0;
 
+    // First, count the number of supported formats
     uint32_t format_count = 0;
     struct v4l2_fmtdesc fmtdesc;
     fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -302,9 +750,11 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
         fmtdesc.index++;
     }
 
+    // Allocate the formats array
     camera->formats_count = format_count;
-    camera->formats = (camera_format*)malloc(sizeof(camera_format) * format_count);
+    camera->formats = (camera_format*)calloc(format_count, sizeof(camera_format));
 
+    // Now populate the formats array
     fmtdesc.index = 0;
     for (uint32_t i = 0; i < format_count; ++i) {
         ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc);
@@ -319,16 +769,27 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
             camera->formats[i].width = frmsize.discrete.width;
             camera->formats[i].height = frmsize.discrete.height;
 
-            // Enumerate frame intervals
+            // Enumerate frame intervals (frame rates)
+            uint32_t fps_count = 0;
             struct v4l2_frmivalenum frmival;
             frmival.pixel_format = fmtdesc.pixelformat;
             frmival.width = frmsize.discrete.width;
             frmival.height = frmsize.discrete.height;
             frmival.index = 0;
-            if (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmival) == 0) {
-                camera->formats[i].fps_count = 1; // This could be more than 1, depending on the device
-                camera->formats[i].fps.frame_rate_numerator = frmival.discrete.numerator;
-                camera->formats[i].fps.frame_rate_denominator = frmival.discrete.denominator;
+            while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmival) == 0) {
+                fps_count++;
+                frmival.index++;
+            }
+
+            camera->formats[i].fps_count = fps_count;
+            camera->formats[i].fps = (frame_rate_fraction*)calloc(fps_count, sizeof(frame_rate_fraction));
+
+            frmival.index = 0;
+            for (uint32_t j = 0; j < fps_count; ++j) {
+                ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmival);
+                camera->formats[i].fps[j].frame_rate_numerator = frmival.discrete.numerator;
+                camera->formats[i].fps[j].frame_rate_denominator = frmival.discrete.denominator;
+                frmival.index++;
             }
         }
 
