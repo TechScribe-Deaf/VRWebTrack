@@ -1,5 +1,8 @@
 project('vrwebtrack', 'c', default_options: ['c_std=c11'])
 
+# Uncomment below if you need a more verbose log
+# add_project_arguments('-DDEBUG_MODE', language: 'c')
+
 glfw_dep = dependency('glfw3')
 avcodec_dep = dependency('libavcodec')
 avformat_dep = dependency('libavformat')

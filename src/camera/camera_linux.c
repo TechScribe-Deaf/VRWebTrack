@@ -14,63 +14,6 @@
 #include <dirent.h>
 
 /**
- * @brief Print the capabilities of a webcam.
- *
- * @param fd File descriptor of the webcam.
- * @param width Desired width of the image in pixels.
- * @param height Desired height of the image in pixels.
- * @return 0 on success, or error code on failure.
- */
-int print_caps_of_webcam(int fd, uint32_t width, uint32_t height)
-{
-    struct v4l2_capability cap;
-    if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
-        fprintf(stderr,"Querying Capabilities");
-        return 1;
-    }
-
-    printf("Driver: %s\n", cap.driver);
-    printf("Card: %s\n", cap.card);
-    printf("Bus: %s\n", cap.bus_info);
-    printf("Version: %d.%d.%d\n", (cap.version >> 16) & 0xFF, (cap.version >> 8) & 0xFF, cap.version & 0xFF);
-    printf("Capabilities: %08x\n", cap.capabilities);
-
-    struct v4l2_fmtdesc fmtdesc;
-    fmtdesc.index = 0;
-    fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-    while (ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
-        printf("Format: %s\n", fmtdesc.description);
-        fmtdesc.index++;
-    }
-
-    struct v4l2_frmsizeenum frmsize;
-    frmsize.pixel_format = V4L2_PIX_FMT_H264;  // replace with your pixel format
-    frmsize.index = 0;
-
-    while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsize) == 0) {
-        if (frmsize.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
-            printf("Size: %dx%d\n", frmsize.discrete.width, frmsize.discrete.height);
-        }
-        frmsize.index++;
-    }
-
-    struct v4l2_frmivalenum frmival;
-    frmival.index = 0;
-    frmival.pixel_format = V4L2_PIX_FMT_H264;  // replace with your pixel format
-    frmival.width = 1024;  // replace with your frame width
-    frmival.height = 576;  // replace with your frame height
-
-    while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmival) == 0) {
-        if (frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
-            printf("Frame rate: %d/%d\n", frmival.discrete.numerator, frmival.discrete.denominator);
-        }
-        frmival.index++;
-    }
-    return 0;
-}
-
-/**
  * @brief Clones a substring of the given C-string into a newly allocated string.
  *
  * This function allocates a new null-terminated string of size `size + 1` and
@@ -137,7 +80,7 @@ static inline char* strclone(const char* src, size_t size)
  * }
  * @endcode
  */
-static inline char* read_file_content(const char* path)
+static char* read_file_content(const char* path)
 {
     FILE *fp = fopen(path, "rb");
     if (fp == NULL) {
@@ -661,7 +604,8 @@ void free_camera_list(camera_list* cameras)
         free (cameras);
     }
 }
-static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
+
+static camera_desc* get_camera_device_desc(int fd, const char* devName)
 {
     if (fd < 0)
     {
