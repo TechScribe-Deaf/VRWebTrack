@@ -638,9 +638,29 @@ void free_camera_desc(camera_desc* camera)
         free(camera->device_id.serial_number);
     if (camera->buffers)
         free(camera->buffers);
+    for (uint32_t formatId = 0; formatId < camera->formats_count; ++formatId)
+    {
+        if (camera->formats[formatId].fps)
+            free(camera->formats[formatId].fps);
+    }
+    if (camera->formats)
+        free(camera->formats);
+
+    if (camera->tuning)
+        free(camera->tuning);
     free(camera);
 }
 
+void free_camera_list(camera_list* cameras)
+{
+    if (cameras)
+    {
+        for (size_t i = 0; i < cameras->count; ++i)
+            free_camera_desc(cameras->cameras[i]);
+        free(cameras->cameras);
+        free (cameras);
+    }
+}
 static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
 {
     if (fd < 0)
@@ -664,30 +684,41 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
         return NULL;
     }
 
-    camera->device_id.driver_info = strclone(cap.driver, sizeof(cap.driver));
-    camera->device_id.bus = strclone(cap.bus_info, sizeof(cap.bus_info));
+    camera->device_id.driver_info = strclone((const char*)cap.driver, sizeof(cap.driver));
+    camera->device_id.bus = strclone((const char*)cap.bus_info, sizeof(cap.bus_info));
     camera->device_id.version = calloc(1, 13);
     snprintf(camera->device_id.version, 13, "%d.%d.%d", (cap.version >> 16) & 0xFF, (cap.version >> 8) & 0xFF, cap.version & 0xFF);
     camera->device_id.capabilities = (uint32_t)cap.capabilities;
-    camera->device_id.card = strclone(cap.card, sizeof(cap.card));
-    camera->device_id.device_name = strclone(cap.card, sizeof(cap.card));
+    camera->device_id.card = strclone((const char*)cap.card, sizeof(cap.card));
+    camera->device_id.device_name = strclone((const char*)cap.card, sizeof(cap.card));
     char pathToTry[512];
     snprintf(pathToTry, 512, "/sys/class/video4linux/%s/device/manufacturer", devName);
     camera->device_id.manufacturer = read_file_content(pathToTry);
     snprintf(pathToTry, 512, "/sys/class/video4linux/%s/device/serial", devName);
     camera->device_id.serial_number = read_file_content(pathToTry);
 
+    uint32_t attempt = 4;
     struct v4l2_requestbuffers req;
-    req.count = 4;
-    req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    req.memory = V4L2_MEMORY_MMAP;
-
-    if (ioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
-        fprintf(stderr, "Failed to request buffers from webcam drivers\n");
+    for (; attempt > 0; attempt--)
+    {
+        req = (struct v4l2_requestbuffers){0};
+        req.count = attempt;
+        req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        req.memory = V4L2_MEMORY_MMAP;
+        if (ioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
+            continue;
+        }
+        break;
+    }
+    if (attempt <= 0)
+    {
+        #ifdef DEBUG_MODE
+        fprintf(stderr, "Failed to request buffers from webcam drivers for %s\n", devName);
+        #endif
+        // Failed to request buffers from the webcam drivers, it possible this is normal
         free_camera_desc(camera);
         return NULL;
     }
-
 
     camera->buffers_count = req.count;
     camera->buffers = (camera_buffer_description*)malloc(sizeof(camera_buffer_description) * req.count);
@@ -722,13 +753,6 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
 
     if (ioctl(fd, VIDIOC_REQBUFS, &req_free) == -1) {
         fprintf(stderr, "Failed to free buffers from webcam drivers\n");
-        free_camera_desc(camera);
-        return NULL;
-    }
-
-        struct v4l2_capability cap;
-    if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
-        fprintf(stderr, "Failed to query capabilities\n");
         free_camera_desc(camera);
         return NULL;
     }
@@ -835,13 +859,6 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
         camera->controls.gain = queryctrl.default_value;
     }
 
-    struct v4l2_capability cap;
-    if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
-        fprintf(stderr, "Failed to querying capabilities\n");
-        free_camera_desc(camera);
-        return NULL;
-    }
-
     if ((cap.capabilities & V4L2_CAP_STREAMING) == V4L2_CAP_STREAMING) {
         // Prefer MMAP if streaming is supported
         camera->io_method = MMAP;
@@ -882,7 +899,7 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
         memset(&tuner_info, 0, sizeof(tuner_info));
         tuner_info.index = i;
         if(ioctl(fd, VIDIOC_G_TUNER, &tuner_info) == -1) {
-            perror("Error querying tuner");
+            fprintf(stderr, "Error querying tuner\n");
             continue;
         }
         camera->tuning[i].signal_locked = (tuner_info.signal > 0);
@@ -899,13 +916,19 @@ static inline camera_desc* get_camera_device_desc(int fd, const char* devName)
         camera->tuning[i].tuning_standard = (tuning_standard_t)tuner_info.audmode;
         camera->tuning[i].input_frequency = tuner_info.rangelow + tuner_info.rangehigh;
     }
+    return camera;
 }
 
-int list_all_camera_devices(camera_desc** outCameras, size_t* outCamerasCount)
+camera_list* list_all_camera_devices()
 {
     int fd;
     DIR *dir;
     struct dirent *ent;
+
+    camera_list* cameras = malloc(sizeof(camera_list));
+    cameras->count = 0;
+    cameras->capacity = 8;
+    cameras->cameras = (camera_desc**) calloc(8, sizeof(camera_desc*));
 
     if ((dir = opendir("/dev/")) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
@@ -914,21 +937,36 @@ int list_all_camera_devices(camera_desc** outCameras, size_t* outCamerasCount)
                 snprintf(dev_name, sizeof(dev_name), "/dev/%s", ent->d_name);
 
                 if ((fd = open(dev_name, O_RDWR)) == -1) {
-                    fprintf(stderr, "Unable to open video device\n");
-                    continue;  // Skip if the device couldn't be opened
+                    continue;
                 }
 
+                if (cameras->count >= cameras->capacity)
+                {
+                    cameras->capacity *= 2;
+                    camera_desc** reallocated_cameras = (camera_desc**) realloc(cameras->cameras, cameras->capacity);
+                    if (!reallocated_cameras)
+                    {
+                        free_camera_list(cameras);
+                        close(fd);
+                        break;
+                    }
+                    cameras->cameras = reallocated_cameras;
+                }
                 
+                camera_desc* desc = get_camera_device_desc(fd, ent->d_name);
+                if (desc)
+                    cameras->cameras[cameras->count++] = desc;
                 close(fd);
             }
         }
         closedir(dir);
     } else {
         fprintf(stderr, "Could not open directory\n");
-        return -1;
+        free_camera_list(cameras);
+        return NULL;
     }
 
-    return 0;
+    return cameras;
 }
 
 /**

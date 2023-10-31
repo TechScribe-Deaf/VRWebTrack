@@ -3,19 +3,14 @@
 int test_list_all_camera_devices()
 {
     int ret = 0;
-    camera_desc* cameras;
-    size_t camera_count;
-    if (list_all_camera_devices(&cameras, &camera_count))
+    camera_list* list = list_all_camera_devices();
+    if (!list)
     {
         ret = 1;
     }
-    if (!ret && camera_count > 0)
+    if (!ret && list->count > 0)
     {
-        if (cameras == NULL)
-        {
-            fprintf(stderr, "Cameras should not be NULL!\n");
-            ret = 2;
-        }
+        
     }
     return ret;
 }

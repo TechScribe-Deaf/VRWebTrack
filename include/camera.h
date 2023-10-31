@@ -459,68 +459,56 @@ typedef struct
     camera_status_tuning* tuning;
 } camera_desc;
 
+// List of Cameras
+typedef struct {
+    camera_desc** cameras;
+    size_t capacity;
+    size_t count;
+} camera_list;
+
 typedef void (*decoded_rgb_frame_buffer_callback)(const uint8_t *rgb_buffer, uint32_t width, uint32_t height);
 
 /**
- * @brief Lists all available camera devices on the system.
- *
- * This function queries the system for all camera devices that are compatible
- * with the V4L2 API. It allocates an array of `camera_desc` structs, each
- * representing a different camera device, and returns this array along with
- * the total number of devices found.
- *
- * The caller is responsible for freeing the allocated `camera_desc` array
+ * @brief Lists all available camera devices on the system and returns them in a list_cameras struct.
+ * 
+ * This function scans the system for all camera devices that are compatible
+ * with the Platform Specific API. It allocates and fills a `list_cameras` struct, which
+ * contains an array of `camera_desc` structs, each representing a different
+ * camera device. The `list_cameras` struct also contains the total number of
+ * devices found.
+ * 
+ * The caller is responsible for freeing the allocated `list_cameras` struct
  * when it is no longer needed.
- *
- * @param[out] outCameras Pointer to an array of `camera_desc` structs. The array
- *                        is allocated by this function and should be freed by the caller.
- *                        Each element contains information about a camera device.
- * @param[out] outCamerasCount Pointer to a variable where the total number of found
- *                             cameras will be stored.
- *
- * @return 0 on success, or a negative error code on failure.
- *
+ * 
+ * @return Pointer to a `list_cameras` struct containing the array of `camera_desc`
+ *         structs and the total number of found camera devices. NULL if the operation fails.
+ * 
  * Example usage:
- * @code{.c}
- * camera_desc* cameras = NULL;
- * size_t count;
- * int result = ;
- * if (list_all_camera_devices(&cameras, &count)) {
- *      // Handle error here
+ * @code
+ * list_cameras* cameras_list = list_all_camera_devices();
+ * if (!cameras_list) {
+ *     // Handle error here
  * }
- * // Do something with the cameras array and count
+ * // Do something with the cameras_list
  * // ...
- * // Don't forget to free the allocated array when done
- * free_camera_devices(cameras);
+ * // Don't forget to free the allocated list_cameras struct when done
+ * free_camera_list(cameras_list);
  * @endcode
  */
-int list_all_camera_devices(camera_desc** outCameras, size_t* outCamerasCount);
+camera_list* list_all_camera_devices();
 
 /**
- * @brief Frees the memory allocated for an array of `camera_desc` structs.
- *
- * This function takes an array of `camera_desc` structs and its size, and
- * performs the necessary cleanup to free the allocated memory. This function
- * should be called to free the memory allocated by `list_all_camera_devices`.
- *
- * @param[in] cameras Pointer to the array of `camera_desc` structs to be freed.
- * @param[in] camerasCount The total number of elements in the `cameras` array.
- *
- * Example usage:
- * @code{.c}
- * camera_desc* cameras = NULL;
- * size_t count;
- * int result = ;
- * if (list_all_camera_devices(&cameras, &count)) {
- *      // Handle error here
- * }
- * // Do something with the cameras array and count
- * // ...
- * // Don't forget to free the allocated array when done
- * free_camera_devices(cameras);
- * @endcode
+ * @brief Frees the memory allocated for a given `camera_desc` struct.
+ * 
+ * This function deallocates all the dynamically-allocated fields within the
+ * `camera_desc` struct, as well as the struct itself, freeing up the memory.
+ * 
+ * The caller should not use the `camera_desc` pointer after this function has been
+ * called on it.
+ * 
+ * @param[in] camera Pointer to the `camera_desc` struct that is to be freed.
  */
-void free_camera_devices(camera_desc* cameras, size_t camerasCount);
+void free_camera_desc(camera_desc* camera);
 
 /**
  * @brief Convert YUYV pixel format to RGB pixel format.
