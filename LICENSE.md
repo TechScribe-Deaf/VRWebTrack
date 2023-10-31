@@ -652,10 +652,10 @@ For more information on this, and how to apply and follow the GNU AGPL, see
 
 ********************************************
 
-Notice: In VRWebTrack/include/camera.h, portion of the work was done by Linux Kernel Contributors
+Notice: In [VRWebTrack/include/camera.h](https://github.com/TechScribe-Deaf/VRWebTrack/blob/master/include/camera.h), portion of the work was done by Linux Kernel Contributors
 with the following notice and description of given work:
 
-The code for camera_pixel_format enumeration in VRWebTrack/include/camera.h were
+The code for camera_pixel_format enumeration in [VRWebTrack/include/camera.h](https://github.com/TechScribe-Deaf/VRWebTrack/blob/master/include/camera.h) were
 transposed from videodev2.h in Linux Kernel development branch which
 can be found online at the following link:
 
