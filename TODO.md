@@ -1,7 +1,7 @@
 ## TODO
 
 - **DONE** - Implement a function that prints Camera Desc object
-- Implements Webcam Process Networking Protocol (Namely UDP Protocol and IPC)
+- **PAUSE** - Implements Webcam Process Networking Protocol (Namely UDP Protocol and IPC)
 - Test Vulkan Computation for Webcam Process ensuring that FFMpeg and Vulkan does not conflicts
 - Implement GUI Monitor as priority going forward
 - Implement Fishbowl Len Correction Algorithm
